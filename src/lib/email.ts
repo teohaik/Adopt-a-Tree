@@ -12,7 +12,7 @@ export async function sendConfirmationEmail(
 ) {
   const mapUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-  const treeUrl = `${appUrl}/?pin=${pinId}`;
+  const treeUrl = `${appUrl}/?email=${encodeURIComponent(userEmail)}`;
 
   const htmlContent = `
     <!DOCTYPE html>
@@ -69,37 +69,37 @@ export async function sendConfirmationEmail(
       <body>
         <div class="container">
           <div class="header">
-            <h1>🌳 Tree Adoption Confirmed!</h1>
+            <h1>🌳 Επιβεβαίωση Υιοθεσίας Δέντρου!</h1>
           </div>
           <div class="content">
-            <p>Dear ${userName},</p>
+            <p>Αγαπητέ/ή ${userName},</p>
 
-            <p>Congratulations! You have successfully adopted a tree through the Adopt a Tree program.</p>
+            <p>Συγχαρητήρια! Υιοθέτησες επιτυχώς ένα δέντρο μέσω του προγράμματος Υιοθέτησε ένα Δέντρο.</p>
 
             <div class="tree-info">
-              <h3>Your Tree Details:</h3>
-              <p><strong>Label:</strong> ${treeLabel}</p>
-              <p><strong>Location:</strong> ${latitude.toFixed(6)}, ${longitude.toFixed(6)}</p>
+              <h3>Λεπτομέρειες Δέντρου:</h3>
+              <p><strong>Ετικέτα:</strong> ${treeLabel}</p>
+              <p><strong>Τοποθεσία:</strong> ${latitude.toFixed(6)}, ${longitude.toFixed(6)}</p>
             </div>
 
-            <p><strong>Your Responsibilities:</strong></p>
+            <p><strong>Οι Υποχρεώσεις Σου:</strong></p>
             <ul>
-              <li>Water your tree regularly, especially during dry periods</li>
-              <li>Monitor the tree's health and report any issues</li>
-              <li>Keep the area around the tree clean</li>
-              <li>Be a champion for your tree and encourage others to adopt!</li>
+              <li>Πότισε το δέντρο σου τακτικά, ειδικά κατά τις ξηρές περιόδους</li>
+              <li>Παρακολούθησε την υγεία του δέντρου και ανάφερε τυχόν προβλήματα</li>
+              <li>Κράτησε την περιοχή γύρω από το δέντρο καθαρή</li>
+              <li>Γίνε πρεσβευτής των δέντρων και ενθάρρυνε άλλους να συμμετάσχουν!</li>
             </ul>
 
             <p style="text-align: center;">
-              <a href="${treeUrl}" class="button">View in App</a>
-              <a href="${mapUrl}" class="button">View on Google Maps</a>
+              <a href="${treeUrl}" class="button">Δες τα Δέντρα Σου</a>
+              <a href="${mapUrl}" class="button">Προβολή στο Google Maps</a>
             </p>
 
-            <p>Thank you for contributing to a greener Thermi, Thessaloniki!</p>
+            <p>Ευχαριστούμε που συμβάλλεις σε μια πιο πράσινη Θέρμη Θεσσαλονίκης!</p>
 
             <div class="footer">
-              <p>This is an automated message from Adopt a Tree</p>
-              <p>If you have any questions, please contact us.</p>
+              <p>Αυτό είναι ένα αυτόματο μήνυμα από το Υιοθέτησε ένα Δέντρο</p>
+              <p>Για οποιαδήποτε ερώτηση, επικοινώνησε μαζί μας.</p>
             </div>
           </div>
         </div>
@@ -109,9 +109,9 @@ export async function sendConfirmationEmail(
 
   try {
     await resend.emails.send({
-      from: process.env.EMAIL_FROM || 'Adopt a Tree <onboarding@resend.dev>',
+      from: process.env.EMAIL_FROM || 'Υιοθέτησε ένα Δέντρο <onboarding@resend.dev>',
       to: userEmail,
-      subject: `Tree Adoption Confirmed: ${treeLabel}`,
+      subject: `Επιβεβαίωση Υιοθεσίας: ${treeLabel}`,
       html: htmlContent,
     });
   } catch (error) {

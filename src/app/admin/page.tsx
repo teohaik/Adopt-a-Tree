@@ -36,7 +36,7 @@ export default function AdminPage() {
   };
 
   const exportToCSV = () => {
-    const headers = ['ID', 'Tree Label', 'User Name', 'User Email', 'Latitude', 'Longitude', 'Created At'];
+    const headers = ['ID', 'Ετικέτα Δέντρου', 'Όνομα Χρήστη', 'Email Χρήστη', 'Γεωγραφικό Πλάτος', 'Γεωγραφικό Μήκος', 'Ημερομηνία Δημιουργίας'];
     const csvData = pins.map(pin => [
       pin.id,
       pin.tree_label,
@@ -63,7 +63,7 @@ export default function AdminPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl">Loading...</div>
+        <div className="text-xl">Φόρτωση...</div>
       </div>
     );
   }
@@ -71,7 +71,7 @@ export default function AdminPage() {
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl text-red-600">Error: {error}</div>
+        <div className="text-xl text-red-600">Σφάλμα: {error}</div>
       </div>
     );
   }
@@ -81,21 +81,21 @@ export default function AdminPage() {
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-4xl font-bold mb-2">Admin Dashboard</h1>
-            <p className="text-gray-600">Manage tree adoptions</p>
+            <h1 className="text-4xl font-bold mb-2">Πίνακας Διαχείρισης</h1>
+            <p className="text-gray-600">Διαχείριση υιοθεσιών δέντρων</p>
           </div>
           <div className="flex gap-4">
             <Link
               href="/"
               className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
             >
-              Back to Map
+              Πίσω στο Χάρτη
             </Link>
             <button
               onClick={exportToCSV}
               className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
             >
-              Export to CSV
+              Εξαγωγή σε CSV
             </button>
           </div>
         </div>
@@ -104,19 +104,19 @@ export default function AdminPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="text-center">
               <div className="text-3xl font-bold text-green-600">{pins.length}</div>
-              <div className="text-gray-600">Total Trees Adopted</div>
+              <div className="text-gray-600">Σύνολο Δέντρων που Υιοθετήθηκαν</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-blue-600">
                 {new Set(pins.map(p => p.user_email)).size}
               </div>
-              <div className="text-gray-600">Unique Adopters</div>
+              <div className="text-gray-600">Μοναδικοί Υιοθέτες</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-purple-600">
-                {pins.length > 0 ? new Date(pins[0].created_at).toLocaleDateString() : 'N/A'}
+                {pins.length > 0 ? new Date(pins[0].created_at).toLocaleDateString('el-GR') : 'Δ/Υ'}
               </div>
-              <div className="text-gray-600">Latest Adoption</div>
+              <div className="text-gray-600">Τελευταία Υιοθεσία</div>
             </div>
           </div>
         </div>
@@ -129,22 +129,22 @@ export default function AdminPage() {
                   ID
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Tree Label
+                  Ετικέτα Δέντρου
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Adopter
+                  Υιοθέτης
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Email
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Location
+                  Τοποθεσία
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Created
+                  Δημιουργήθηκε
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
+                  Ενέργειες
                 </th>
               </tr>
             </thead>
@@ -164,10 +164,10 @@ export default function AdminPage() {
                     {pin.user_email}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {pin.latitude.toFixed(6)}, {pin.longitude.toFixed(6)}
+                    {parseFloat(pin.latitude as any).toFixed(6)}, {parseFloat(pin.longitude as any).toFixed(6)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(pin.created_at).toLocaleDateString()}
+                    {new Date(pin.created_at).toLocaleDateString('el-GR')}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <a
@@ -176,7 +176,7 @@ export default function AdminPage() {
                       rel="noopener noreferrer"
                       className="text-green-600 hover:text-green-900"
                     >
-                      View on Map
+                      Προβολή στο Χάρτη
                     </a>
                   </td>
                 </tr>
@@ -186,7 +186,7 @@ export default function AdminPage() {
 
           {pins.length === 0 && (
             <div className="text-center py-12 text-gray-500">
-              No trees adopted yet. Start by adding pins to the map!
+              Δεν υιοθετήθηκαν ακόμα δέντρα. Ξεκινήστε προσθέτοντας δέντρα στο χάρτη!
             </div>
           )}
         </div>

@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Adopt a Tree',
-  description: 'Tree adoption platform',
+  title: 'Υιοθέτησε ένα Δέντρο - Θέρμη',
+  description: 'Πλατφόρμα υιοθεσίας δέντρων στη Θέρμη Θεσσαλονίκης',
 }
 
 export default function RootLayout({

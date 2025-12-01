@@ -144,23 +144,9 @@ export default function Home() {
           <h1 className="text-5xl font-bold mb-4 text-green-800">
             Υιοθέτησε ένα Δέντρο στη Θέρμη
           </h1>
-          <p className="text-lg text-gray-700 mb-6">
+          <p className="text-lg text-gray-700 mb-8">
             Βοήθησε να πρασινίσει η κοινότητά μας υιοθετώντας και φροντίζοντας ένα δέντρο
           </p>
-          <div className="flex justify-center gap-4 flex-wrap">
-            <button
-              onClick={handleAddTreeClick}
-              disabled={placementMode}
-              className="bg-orange-500 text-white px-8 py-3 rounded-full hover:bg-orange-600 shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none font-semibold flex items-center gap-2"
-            >
-              <span className="text-xl">🌳</span>
-              <span>{placementMode ? 'Τοποθέτηση Δέντρου...' : 'Πρόσθεσε Δέντρο'}</span>
-            </button>
-            <div className="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm">
-              <span className="text-2xl">🌳</span>
-              <span className="font-semibold text-green-700">{pins.length} Δέντρα Υιοθετήθηκαν</span>
-            </div>
-          </div>
         </div>
 
         {showSuccess && (
@@ -170,45 +156,64 @@ export default function Home() {
           </div>
         )}
 
-        <div className="max-w-6xl mx-auto">
-          <div className="mb-6 flex flex-col items-center gap-4">
-            <div className="flex gap-4 text-sm">
-              <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm">
+        <div className="max-w-7xl mx-auto">
+          {/* Controls Bar - Above Map */}
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3 bg-white/80 backdrop-blur-sm px-6 py-4 rounded-xl shadow-md">
+            {/* Left side - Stats & Legend */}
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-green-50 rounded-full">
                 <span className="text-xl">🌳</span>
-                <span className="text-gray-700">Άλλα Δέντρα</span>
+                <span className="font-semibold text-green-700 text-sm">{pins.length} Υιοθετήθηκαν</span>
               </div>
-              <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm">
-                <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center text-xs">🌳</div>
-                <span className="text-gray-700">Τα Δέντρα Σου</span>
+
+              <div className="flex gap-3 text-xs">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-lg">🌳</span>
+                  <span className="text-gray-600">Άλλα</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-5 h-5 rounded-full bg-orange-500 flex items-center justify-center text-xs">🌳</div>
+                  <span className="text-gray-600">Δικά Σου</span>
+                </div>
               </div>
+
+              <form onSubmit={handleEmailFilter} className="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-200">
+                <span className="text-gray-500 text-sm">📧</span>
+                <input
+                  type="email"
+                  value={emailInput}
+                  onChange={(e) => setEmailInput(e.target.value)}
+                  placeholder="Email για φίλτρο"
+                  className="outline-none text-sm w-40 bg-transparent placeholder-gray-400"
+                />
+                {currentUserEmail ? (
+                  <button
+                    type="button"
+                    onClick={handleClearFilter}
+                    className="text-xs bg-gray-200 hover:bg-gray-300 px-2 py-0.5 rounded-full transition-colors"
+                  >
+                    ✕
+                  </button>
+                ) : (
+                  <button
+                    type="submit"
+                    className="text-xs bg-green-600 hover:bg-green-700 text-white px-3 py-0.5 rounded-full transition-colors"
+                  >
+                    Φίλτρο
+                  </button>
+                )}
+              </form>
             </div>
 
-            <form onSubmit={handleEmailFilter} className="flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-md">
-              <span className="text-gray-600 text-sm">📧</span>
-              <input
-                type="email"
-                value={emailInput}
-                onChange={(e) => setEmailInput(e.target.value)}
-                placeholder="Το email σου για να δεις τα δέντρα σου"
-                className="outline-none text-sm w-64 placeholder-gray-400"
-              />
-              {currentUserEmail ? (
-                <button
-                  type="button"
-                  onClick={handleClearFilter}
-                  className="text-xs bg-gray-200 hover:bg-gray-300 px-3 py-1 rounded-full transition-colors"
-                >
-                  Καθαρισμός
-                </button>
-              ) : (
-                <button
-                  type="submit"
-                  className="text-xs bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded-full transition-colors"
-                >
-                  Φίλτρο
-                </button>
-              )}
-            </form>
+            {/* Right side - Add Tree Button */}
+            <button
+              onClick={handleAddTreeClick}
+              disabled={placementMode}
+              className="bg-green-600 text-white px-6 py-2.5 rounded-lg hover:bg-green-700 shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold flex items-center gap-2 text-sm"
+            >
+              <span className="text-lg">🌳</span>
+              <span>{placementMode ? 'Τοποθέτηση...' : 'Πρόσθεσε Δέντρο'}</span>
+            </button>
           </div>
           <TreeMap
             onPinCreated={handlePinCreated}

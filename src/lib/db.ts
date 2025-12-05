@@ -13,6 +13,18 @@ export async function initDatabase() {
       UNIQUE(latitude, longitude)
     )
   `;
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS planting_zones (
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(255) NOT NULL,
+      description TEXT,
+      coordinates JSONB NOT NULL,
+      enabled BOOLEAN DEFAULT true,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `;
 }
 
 export interface TreePin {
@@ -45,4 +57,106 @@ export async function getAllTreePins(): Promise<TreePin[]> {
     SELECT * FROM tree_pins ORDER BY created_at DESC
   `;
   return result.rows as TreePin[];
+}
+
+// Planting Zones
+export interface PlantingZone {
+  id: number;
+  name: string;
+  description: string;
+  coordinates: Array<{ lat: number; lng: number }>;
+  enabled: boolean;
+  created_at: Date;
+  updated_at: Date;
+}
+
+export async function createPlantingZone(
+  name: string,
+  description: string,
+  coordinates: Array<{ lat: number; lng: number }>
+): Promise<PlantingZone> {
+  const result = await sql`
+    INSERT INTO planting_zones (name, description, coordinates)
+    VALUES (${name}, ${description}, ${JSON.stringify(coordinates)})
+    RETURNING *
+  `;
+  const zone = result.rows[0];
+  return {
+    ...zone,
+    coordinates: typeof zone.coordinates === 'string'
+      ? JSON.parse(zone.coordinates)
+      : zone.coordinates
+  } as PlantingZone;
+}
+
+export async function getAllPlantingZones(): Promise<PlantingZone[]> {
+  const result = await sql`
+    SELECT * FROM planting_zones ORDER BY created_at DESC
+  `;
+  return result.rows.map(zone => ({
+    ...zone,
+    coordinates: typeof zone.coordinates === 'string'
+      ? JSON.parse(zone.coordinates)
+      : zone.coordinates
+  })) as PlantingZone[];
+}
+
+export async function getEnabledPlantingZones(): Promise<PlantingZone[]> {
+  const result = await sql`
+    SELECT * FROM planting_zones WHERE enabled = true ORDER BY created_at DESC
+  `;
+  return result.rows.map(zone => ({
+    ...zone,
+    coordinates: typeof zone.coordinates === 'string'
+      ? JSON.parse(zone.coordinates)
+      : zone.coordinates
+  })) as PlantingZone[];
+}
+
+export async function updatePlantingZone(
+  id: number,
+  name: string,
+  description: string,
+  coordinates: Array<{ lat: number; lng: number }>,
+  enabled: boolean
+): Promise<PlantingZone> {
+  const result = await sql`
+    UPDATE planting_zones
+    SET name = ${name},
+        description = ${description},
+        coordinates = ${JSON.stringify(coordinates)},
+        enabled = ${enabled},
+        updated_at = CURRENT_TIMESTAMP
+    WHERE id = ${id}
+    RETURNING *
+  `;
+  const zone = result.rows[0];
+  return {
+    ...zone,
+    coordinates: typeof zone.coordinates === 'string'
+      ? JSON.parse(zone.coordinates)
+      : zone.coordinates
+  } as PlantingZone;
+}
+
+export async function deletePlantingZone(id: number): Promise<void> {
+  await sql`
+    DELETE FROM planting_zones WHERE id = ${id}
+  `;
+}
+
+export async function togglePlantingZone(id: number, enabled: boolean): Promise<PlantingZone> {
+  const result = await sql`
+    UPDATE planting_zones
+    SET enabled = ${enabled}, updated_at = CURRENT_TIMESTAMP
+    WHERE id = ${id}
+    RETURNING *
+  `;
+  const zone = result.rows[0];
+  return {
+    ...zone,
+    coordinates: typeof zone.coordinates === 'string'
+      ? JSON.parse(zone.coordinates)
+      : zone.coordinates
+  } as PlantingZone;
 }

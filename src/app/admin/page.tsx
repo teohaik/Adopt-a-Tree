@@ -86,6 +86,12 @@ export default function AdminPage() {
           </div>
           <div className="flex gap-4">
             <Link
+              href="/admin/zones"
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            >
+              Διαχείριση Ζωνών
+            </Link>
+            <Link
               href="/"
               className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
             >

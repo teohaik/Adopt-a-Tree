@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createTreePin, getAllTreePins, initDatabase } from '@/lib/db';
+import { createTreePin, getAllTreePins, initDatabase, getEnabledPlantingZones } from '@/lib/db';
 import { sendConfirmationEmail } from '@/lib/email';
+import { isPointInPlantingZone, getZoneForPoint } from '@/lib/plantingZones';
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,10 +19,29 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate location is within planting zones
+    const lat = parseFloat(latitude);
+    const lng = parseFloat(longitude);
+
+    // Load zones from database
+    const zones = await getEnabledPlantingZones();
+
+    if (!isPointInPlantingZone(lat, lng, zones)) {
+      const zone = getZoneForPoint(lat, lng, zones);
+      return NextResponse.json(
+        {
+          error: 'Η φύτευση δέντρων επιτρέπεται μόνο στις ορισμένες περιοχές που έχει καθορίσει ο Δήμος. Παρακαλώ επιλέξτε μια τοποθεσία εντός των πράσινων περιοχών.',
+          inZone: false,
+          attemptedZone: zone?.name
+        },
+        { status: 403 }
+      );
+    }
+
     // Create the pin in the database
     const pin = await createTreePin(
-      parseFloat(latitude),
-      parseFloat(longitude),
+      lat,
+      lng,
       name,
       email,
       label

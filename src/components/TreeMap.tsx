@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { isPointInPlantingZone, PlantingZone } from '@/lib/plantingZones';
 
 interface TreeMapProps {
   onPinCreated: (lat: number, lng: number) => void;
@@ -16,19 +17,43 @@ export default function TreeMap({ onPinCreated, existingPins = [], currentUserEm
   const [markers, setMarkers] = useState<google.maps.Marker[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const [previewMarker, setPreviewMarker] = useState<google.maps.Marker | null>(null);
+  const [zonePolygons, setZonePolygons] = useState<google.maps.Polygon[]>([]);
+  const [plantingZones, setPlantingZones] = useState<PlantingZone[]>([]);
 
   // Load Google Maps script
   useEffect(() => {
-    if (typeof window !== 'undefined' && !window.google) {
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`;
-      script.async = true;
-      script.defer = true;
-      script.onload = () => setIsLoaded(true);
-      document.head.appendChild(script);
-    } else if (window.google) {
+    if (typeof window === 'undefined') return;
+
+    // Check if already loaded
+    if (window.google?.maps) {
       setIsLoaded(true);
+      return;
     }
+
+    // Check if script is already in DOM
+    const existingScript = document.querySelector(
+      'script[src*="maps.googleapis.com"]'
+    );
+
+    if (existingScript) {
+      // Wait for existing script to load
+      const checkLoaded = setInterval(() => {
+        if (window.google?.maps) {
+          setIsLoaded(true);
+          clearInterval(checkLoaded);
+        }
+      }, 100);
+
+      return () => clearInterval(checkLoaded);
+    }
+
+    // Create new script
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`;
+    script.async = true;
+    script.defer = true;
+    script.onload = () => setIsLoaded(true);
+    document.head.appendChild(script);
   }, []);
 
   // Initialize map when Google Maps is loaded
@@ -47,6 +72,70 @@ export default function TreeMap({ onPinCreated, existingPins = [], currentUserEm
 
     setMap(mapInstance);
   }, [isLoaded, onPinCreated, map]);
+
+  // Load planting zones from API
+  useEffect(() => {
+    async function fetchZones() {
+      try {
+        const response = await fetch('/api/zones?enabled=true');
+        if (response.ok) {
+          const zones = await response.json();
+          setPlantingZones(zones);
+        }
+      } catch (error) {
+        console.error('Failed to load planting zones:', error);
+      }
+    }
+
+    fetchZones();
+  }, []);
+
+  // Draw planting zones on map
+  useEffect(() => {
+    if (!map || !isLoaded || plantingZones.length === 0) return;
+
+    // Clear existing polygons
+    zonePolygons.forEach(polygon => polygon.setMap(null));
+
+    // Draw enabled zones
+    const newPolygons = plantingZones
+      .filter(zone => zone.enabled)
+      .map(zone => {
+        const polygon = new google.maps.Polygon({
+          paths: zone.coordinates,
+          strokeColor: '#16a34a',
+          strokeOpacity: 0.8,
+          strokeWeight: 2,
+          fillColor: '#16a34a',
+          fillOpacity: 0.15,
+          map: map,
+          clickable: !placementMode, // Make polygon non-clickable during placement mode
+        });
+
+        // Add info window for zone
+        const infoWindow = new google.maps.InfoWindow();
+
+        polygon.addListener('click', (e: google.maps.PolyMouseEvent) => {
+          // Don't show zone info when in placement mode
+          if (placementMode) {
+            return;
+          }
+
+          infoWindow.setContent(`
+            <div style="padding: 8px;">
+              <strong>${zone.name}</strong>
+              <p style="font-size: 12px; margin-top: 4px; color: #666;">${zone.description}</p>
+            </div>
+          `);
+          infoWindow.setPosition(e.latLng);
+          infoWindow.open(map);
+        });
+
+        return polygon;
+      });
+
+    setZonePolygons(newPolygons);
+  }, [map, isLoaded, plantingZones, placementMode]);
 
   // Update markers when existing pins change
   useEffect(() => {
@@ -143,6 +232,25 @@ export default function TreeMap({ onPinCreated, existingPins = [], currentUserEm
         if (e.latLng) {
           const lat = e.latLng.lat();
           const lng = e.latLng.lng();
+
+          // Check if location is within allowed planting zones
+          if (!isPointInPlantingZone(lat, lng, plantingZones)) {
+            // Show error message
+            const infoWindow = new google.maps.InfoWindow({
+              content: `
+                <div style="padding: 12px; max-width: 250px;">
+                  <strong style="color: #dc2626;">❌ Μη Επιτρεπόμενη Περιοχή</strong>
+                  <p style="font-size: 12px; margin-top: 8px; color: #666;">
+                    Η φύτευση δέντρων επιτρέπεται μόνο στις πράσινες περιοχές που έχουν ορίσει ο Δήμος.
+                  </p>
+                </div>
+              `,
+              position: { lat, lng },
+            });
+            infoWindow.open(map);
+            setTimeout(() => infoWindow.close(), 4000);
+            return;
+          }
 
           // Create preview marker
           if (previewMarker) {

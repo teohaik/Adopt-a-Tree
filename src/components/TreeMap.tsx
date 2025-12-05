@@ -103,11 +103,11 @@ export default function TreeMap({ onPinCreated, existingPins = [], currentUserEm
       .map(zone => {
         const polygon = new google.maps.Polygon({
           paths: zone.coordinates,
-          strokeColor: '#16a34a',
-          strokeOpacity: 0.8,
-          strokeWeight: 2,
-          fillColor: '#16a34a',
-          fillOpacity: 0.15,
+          strokeColor: '#065f46',
+          strokeOpacity: 0.9,
+          strokeWeight: 3,
+          fillColor: '#065f46',
+          fillOpacity: 0.25,
           map: map,
           clickable: !placementMode, // Make polygon non-clickable during placement mode
         });

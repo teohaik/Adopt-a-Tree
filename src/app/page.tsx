@@ -62,7 +62,7 @@ export default function Home() {
   };
 
   const handleAddTreeClick = () => {
-    setPlacementMode(true);
+    setPlacementMode(!placementMode);
   };
 
   const handlePlacementComplete = () => {
@@ -156,6 +156,33 @@ export default function Home() {
           </div>
         )}
 
+        <div className="max-w-4xl mx-auto mb-8 bg-white rounded-lg shadow-md p-8">
+          <h2 className="text-2xl font-bold mb-4 text-gray-800">Πώς Λειτουργεί</h2>
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="text-center">
+              <div className="text-4xl mb-2">📍</div>
+              <h3 className="font-semibold text-lg mb-2">1. Διάλεξε Τοποθεσία</h3>
+              <p className="text-gray-600 text-sm">
+                Κάνε κλικ στο κουμπί και στη συνέχεια στο χάρτη όπου θα ήθελες να υιοθετήσεις ένα δέντρο
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl mb-2">✍️</div>
+              <h3 className="font-semibold text-lg mb-2">2. Συμπλήρωσε Στοιχεία</h3>
+              <p className="text-gray-600 text-sm">
+                Εισήγαγε το όνομά σου, email και δώσε μια ετικέτα στο δέντρο σου
+              </p>
+            </div>
+            <div className="text-center">
+              <div className="text-4xl mb-2">💧</div>
+              <h3 className="font-semibold text-lg mb-2">3. Φρόντισέ Το</h3>
+              <p className="text-gray-600 text-sm">
+                Λάβε επιβεβαίωση και δεσμεύσου να ποτίζεις και να συντηρείς το δέντρο σου
+              </p>
+            </div>
+          </div>
+        </div>
+
         <div className="max-w-7xl mx-auto">
           {/* Controls Bar - Above Map */}
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3 bg-white/80 backdrop-blur-sm px-6 py-4 rounded-xl shadow-md">
@@ -208,11 +235,14 @@ export default function Home() {
             {/* Right side - Add Tree Button */}
             <button
               onClick={handleAddTreeClick}
-              disabled={placementMode}
-              className="bg-green-600 text-white px-6 py-2.5 rounded-lg hover:bg-green-700 shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold flex items-center gap-2 text-sm"
+              className={`px-6 py-2.5 rounded-lg shadow-md transition-all font-semibold flex items-center gap-2 text-sm ${
+                placementMode
+                  ? 'bg-orange-600 text-white hover:bg-orange-700'
+                  : 'bg-green-600 text-white hover:bg-green-700'
+              }`}
             >
-              <span className="text-lg">🌳</span>
-              <span>{placementMode ? 'Τοποθέτηση...' : 'Πρόσθεσε Δέντρο'}</span>
+              <span className="text-lg">{placementMode ? '✕' : '🌳'}</span>
+              <span>{placementMode ? 'Ακύρωση' : 'Πρόσθεσε Δέντρο'}</span>
             </button>
           </div>
           <TreeMap
@@ -222,33 +252,6 @@ export default function Home() {
             placementMode={placementMode}
             onPlacementComplete={handlePlacementComplete}
           />
-        </div>
-
-        <div className="max-w-4xl mx-auto mt-12 bg-white rounded-lg shadow-md p-8">
-          <h2 className="text-2xl font-bold mb-4 text-gray-800">Πώς Λειτουργεί</h2>
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="text-center">
-              <div className="text-4xl mb-2">📍</div>
-              <h3 className="font-semibold text-lg mb-2">1. Διάλεξε Τοποθεσία</h3>
-              <p className="text-gray-600 text-sm">
-                Κάνε κλικ στο κουμπί και στη συνέχεια στο χάρτη όπου θα ήθελες να υιοθετήσεις ένα δέντρο
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl mb-2">✍️</div>
-              <h3 className="font-semibold text-lg mb-2">2. Συμπλήρωσε Στοιχεία</h3>
-              <p className="text-gray-600 text-sm">
-                Εισήγαγε το όνομά σου, email και δώσε μια ετικέτα στο δέντρο σου
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl mb-2">💧</div>
-              <h3 className="font-semibold text-lg mb-2">3. Φρόντισέ Το</h3>
-              <p className="text-gray-600 text-sm">
-                Λάβε επιβεβαίωση και δεσμεύσου να ποτίζεις και να συντηρείς το δέντρο σου
-              </p>
-            </div>
-          </div>
         </div>
 
         <div className="max-w-4xl mx-auto mt-8 bg-yellow-50 border border-yellow-200 rounded-lg p-6">

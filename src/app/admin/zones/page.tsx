@@ -95,14 +95,18 @@ export default function AdminZonesPage() {
   const [loading, setLoading] = useState(true);
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentPolygon, setCurrentPolygon] = useState<google.maps.Polygon | null>(null);
+  const currentPolygonRef = useRef<google.maps.Polygon | null>(null);
   const [tempMarkers, setTempMarkers] = useState<google.maps.Marker[]>([]);
   const tempMarkersRef = useRef<google.maps.Marker[]>([]);
   const [map, setMap] = useState<google.maps.Map | null>(null);
+  const isDraggingMarkerRef = useRef(false);
 
   // Form state
   const [zoneName, setZoneName] = useState('');
   const [zoneDescription, setZoneDescription] = useState('');
   const [coordinates, setCoordinates] = useState<Array<{ lat: number; lng: number }>>([]);
+  const [editingZoneId, setEditingZoneId] = useState<number | null>(null);
+  const [editingZoneEnabled, setEditingZoneEnabled] = useState(true);
 
   const handleMapLoad = useCallback((mapInstance: google.maps.Map) => {
     setMap(mapInstance);
@@ -112,6 +116,41 @@ export default function AdminZonesPage() {
   useEffect(() => {
     fetchZones();
   }, []);
+
+  // Update polygon when coordinates change during drawing
+  useEffect(() => {
+    if (!map || !isDrawing) return;
+
+    // Remove old polygon using ref
+    if (currentPolygonRef.current) {
+      currentPolygonRef.current.setMap(null);
+      currentPolygonRef.current = null;
+    }
+
+    // Create new polygon if we have at least 3 points
+    if (coordinates.length >= 3) {
+      const polygon = new google.maps.Polygon({
+        paths: coordinates,
+        strokeColor: '#16a34a',  // Green color
+        strokeOpacity: 0.8,
+        strokeWeight: 2,
+        fillColor: '#16a34a',
+        fillOpacity: 0.35,
+        map: map,
+      });
+      currentPolygonRef.current = polygon;
+      setCurrentPolygon(polygon);
+    } else {
+      setCurrentPolygon(null);
+    }
+
+    // Cleanup function
+    return () => {
+      if (currentPolygonRef.current) {
+        currentPolygonRef.current.setMap(null);
+      }
+    };
+  }, [coordinates, map, isDrawing]);
 
   const fetchZones = async () => {
     try {
@@ -139,6 +178,11 @@ export default function AdminZonesPage() {
     const clickListener = map.addListener('click', (e: google.maps.MapMouseEvent) => {
       if (!e.latLng) return;
 
+      // Don't create a new point if we're dragging a marker
+      if (isDraggingMarkerRef.current) {
+        return;
+      }
+
       const lat = e.latLng.lat();
       const lng = e.latLng.lng();
 
@@ -151,11 +195,22 @@ export default function AdminZonesPage() {
           map: map,
           label: newCoordinates.length.toString(),
           draggable: true,
+          clickable: true,
         });
 
         // Store marker in ref
         tempMarkersRef.current.push(marker);
         setTempMarkers([...tempMarkersRef.current]);
+
+        // Prevent new point creation when interacting with marker
+        marker.addListener('mousedown', () => {
+          isDraggingMarkerRef.current = true;
+          // Reset after a delay in case user just clicks without dragging
+          setTimeout(() => {
+            if (!isDraggingMarkerRef.current) return;
+            isDraggingMarkerRef.current = false;
+          }, 150);
+        });
 
         // Update marker position when dragged
         marker.addListener('dragend', (event: google.maps.MapMouseEvent) => {
@@ -170,51 +225,11 @@ export default function AdminZonesPage() {
               lat: event.latLng!.lat(),
               lng: event.latLng!.lng(),
             };
-
-            // Update polygon
-            setCurrentPolygon(prevPolygon => {
-              if (prevPolygon) {
-                prevPolygon.setMap(null);
-              }
-
-              if (updatedCoords.length >= 3) {
-                const polygon = new google.maps.Polygon({
-                  paths: updatedCoords,
-                  strokeColor: '#f97316',
-                  strokeOpacity: 0.8,
-                  strokeWeight: 2,
-                  fillColor: '#f97316',
-                  fillOpacity: 0.15,
-                  map: map,
-                });
-                return polygon;
-              }
-              return null;
-            });
-
             return updatedCoords;
           });
-        });
 
-        // Update polygon
-        setCurrentPolygon(prevPolygon => {
-          if (prevPolygon) {
-            prevPolygon.setMap(null);
-          }
-
-          if (newCoordinates.length >= 3) {
-            const polygon = new google.maps.Polygon({
-              paths: newCoordinates,
-              strokeColor: '#f97316',
-              strokeOpacity: 0.8,
-              strokeWeight: 2,
-              fillColor: '#f97316',
-              fillOpacity: 0.15,
-              map: map,
-            });
-            return polygon;
-          }
-          return prevPolygon;
+          // Reset flag after drag
+          isDraggingMarkerRef.current = false;
         });
 
         return newCoordinates;
@@ -233,17 +248,20 @@ export default function AdminZonesPage() {
     tempMarkersRef.current = [];
     setTempMarkers([]);
 
-    // Remove polygon
-    if (currentPolygon) {
-      currentPolygon.setMap(null);
-      setCurrentPolygon(null);
+    // Remove polygon using ref
+    if (currentPolygonRef.current) {
+      currentPolygonRef.current.setMap(null);
+      currentPolygonRef.current = null;
     }
+    setCurrentPolygon(null);
 
     // Reset state
     setIsDrawing(false);
     setCoordinates([]);
     setZoneName('');
     setZoneDescription('');
+    setEditingZoneId(null);
+    setEditingZoneEnabled(true);
     map.setOptions({ draggableCursor: '' });
 
     // Remove listener
@@ -259,20 +277,23 @@ export default function AdminZonesPage() {
     }
 
     try {
+      const isEditing = editingZoneId !== null;
       const response = await fetch('/api/zones', {
-        method: 'POST',
+        method: isEditing ? 'PUT' : 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          ...(isEditing && { id: editingZoneId }),
           name: zoneName,
           description: zoneDescription,
           coordinates: coordinates,
+          ...(isEditing && { enabled: editingZoneEnabled }),
         }),
       });
 
       if (response.ok) {
-        alert('Η ζώνη αποθηκεύτηκε επιτυχώς!');
+        alert(isEditing ? 'Η ζώνη ενημερώθηκε επιτυχώς!' : 'Η ζώνη αποθηκεύτηκε επιτυχώς!');
         cancelDrawing();
         fetchZones();
       } else {
@@ -319,6 +340,73 @@ export default function AdminZonesPage() {
     } catch (error) {
       console.error('Error deleting zone:', error);
     }
+  };
+
+  const loadZoneForEditing = (zone: PlantingZone) => {
+    if (!map) return;
+
+    // Cancel any existing drawing
+    cancelDrawing();
+
+    // Set zone data
+    setZoneName(zone.name);
+    setZoneDescription(zone.description);
+    setCoordinates(zone.coordinates);
+    setEditingZoneId(zone.id);
+    setEditingZoneEnabled(zone.enabled);
+    setIsDrawing(true);
+
+    // Create markers for each coordinate
+    zone.coordinates.forEach((coord, index) => {
+      const marker = new google.maps.Marker({
+        position: { lat: coord.lat, lng: coord.lng },
+        map: map,
+        label: (index + 1).toString(),
+        draggable: true,
+        clickable: true,
+      });
+
+      // Prevent new point creation when interacting with marker
+      marker.addListener('mousedown', () => {
+        isDraggingMarkerRef.current = true;
+        // Reset after a delay in case user just clicks without dragging
+        setTimeout(() => {
+          if (!isDraggingMarkerRef.current) return;
+          isDraggingMarkerRef.current = false;
+        }, 150);
+      });
+
+      // Update coordinates when marker is dragged
+      marker.addListener('dragend', (event: google.maps.MapMouseEvent) => {
+        if (!event.latLng) return;
+
+        const markerIndex = tempMarkersRef.current.findIndex(m => m === marker);
+        if (markerIndex === -1) return;
+
+        setCoordinates(currentCoords => {
+          const updatedCoords = [...currentCoords];
+          updatedCoords[markerIndex] = {
+            lat: event.latLng!.lat(),
+            lng: event.latLng!.lng(),
+          };
+          return updatedCoords;
+        });
+
+        // Reset flag after drag
+        isDraggingMarkerRef.current = false;
+      });
+
+      tempMarkersRef.current.push(marker);
+    });
+
+    setTempMarkers([...tempMarkersRef.current]);
+
+    // Center map on the zone
+    const bounds = new google.maps.LatLngBounds();
+    zone.coordinates.forEach(coord => {
+      bounds.extend({ lat: coord.lat, lng: coord.lng });
+    });
+    map.fitBounds(bounds);
   };
 
   const handleLogout = async () => {
@@ -392,7 +480,11 @@ export default function AdminZonesPage() {
           {isDrawing && (
             <div className="mb-4 p-4 bg-orange-50 border border-orange-200 rounded-md">
               <p className="font-semibold text-orange-800 mb-2">
-                📍 Κάνε κλικ στο χάρτη για να σημειώσεις τις κορυφές του πολυγώνου ({coordinates.length} σημεία)
+                {editingZoneId ? (
+                  <>✏️ Επεξεργασία ζώνης: {zoneName} ({coordinates.length} σημεία)</>
+                ) : (
+                  <>📍 Κάνε κλικ στο χάρτη για να σημειώσεις τις κορυφές του πολυγώνου ({coordinates.length} σημεία)</>
+                )}
               </p>
               <div className="space-y-2">
                 <input
@@ -415,7 +507,7 @@ export default function AdminZonesPage() {
                     onClick={saveZone}
                     className="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
                   >
-                    💾 Αποθήκευση Ζώνης
+                    {editingZoneId ? '💾 Ενημέρωση Ζώνης' : '💾 Αποθήκευση Ζώνης'}
                   </button>
                 )}
               </div>
@@ -493,6 +585,12 @@ export default function AdminZonesPage() {
                       )}
                     </td>
                     <td className="px-6 py-4 text-sm space-x-2">
+                      <button
+                        onClick={() => loadZoneForEditing(zone)}
+                        className="px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                      >
+                        Επεξεργασία
+                      </button>
                       <button
                         onClick={() => toggleZone(zone.id, zone.enabled)}
                         className={`px-3 py-1 rounded-md ${

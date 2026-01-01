@@ -21,10 +21,21 @@ export async function initDatabase() {
       description TEXT,
       coordinates JSONB NOT NULL,
       enabled BOOLEAN DEFAULT true,
+      nearest_roads TEXT,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
   `;
+
+  // Add nearest_roads column if it doesn't exist (migration for existing tables)
+  try {
+    await sql`
+      ALTER TABLE planting_zones
+      ADD COLUMN IF NOT EXISTS nearest_roads TEXT
+    `;
+  } catch (error) {
+    // Column might already exist, ignore error
+  }
 }
 
 export interface TreePin {
@@ -66,6 +77,7 @@ export interface PlantingZone {
   description: string;
   coordinates: Array<{ lat: number; lng: number }>;
   enabled: boolean;
+  nearest_roads: string | null;
   created_at: Date;
   updated_at: Date;
 }
@@ -73,11 +85,12 @@ export interface PlantingZone {
 export async function createPlantingZone(
   name: string,
   description: string,
-  coordinates: Array<{ lat: number; lng: number }>
+  coordinates: Array<{ lat: number; lng: number }>,
+  nearestRoads?: string
 ): Promise<PlantingZone> {
   const result = await sql`
-    INSERT INTO planting_zones (name, description, coordinates)
-    VALUES (${name}, ${description}, ${JSON.stringify(coordinates)})
+    INSERT INTO planting_zones (name, description, coordinates, nearest_roads)
+    VALUES (${name}, ${description}, ${JSON.stringify(coordinates)}, ${nearestRoads || null})
     RETURNING *
   `;
   const zone = result.rows[0];
@@ -118,7 +131,8 @@ export async function updatePlantingZone(
   name: string,
   description: string,
   coordinates: Array<{ lat: number; lng: number }>,
-  enabled: boolean
+  enabled: boolean,
+  nearestRoads?: string
 ): Promise<PlantingZone> {
   const result = await sql`
     UPDATE planting_zones
@@ -126,6 +140,7 @@ export async function updatePlantingZone(
         description = ${description},
         coordinates = ${JSON.stringify(coordinates)},
         enabled = ${enabled},
+        nearest_roads = ${nearestRoads !== undefined ? nearestRoads : sql`nearest_roads`},
         updated_at = CURRENT_TIMESTAMP
     WHERE id = ${id}
     RETURNING *

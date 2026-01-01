@@ -9,6 +9,7 @@ import {
   initDatabase
 } from '@/lib/db';
 import { verifyApiAuth } from '@/lib/apiAuth';
+import { calculateNearestRoads } from '@/lib/nearestRoads';
 
 export async function GET(request: NextRequest) {
   try {
@@ -66,7 +67,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const zone = await createPlantingZone(name, description || '', coordinates);
+    // Calculate nearest roads
+    const nearestRoads = await calculateNearestRoads(coordinates);
+
+    const zone = await createPlantingZone(name, description || '', coordinates, nearestRoads);
 
     return NextResponse.json(zone, { status: 201 });
   } catch (error) {
@@ -100,12 +104,16 @@ export async function PUT(request: NextRequest) {
       );
     }
 
+    // Calculate nearest roads when coordinates are updated
+    const nearestRoads = await calculateNearestRoads(coordinates);
+
     const zone = await updatePlantingZone(
       id,
       name,
       description || '',
       coordinates,
-      enabled !== undefined ? enabled : true
+      enabled !== undefined ? enabled : true,
+      nearestRoads
     );
 
     return NextResponse.json(zone);

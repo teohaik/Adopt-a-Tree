@@ -10,6 +10,7 @@ interface PlantingZone {
   description: string;
   coordinates: Array<{ lat: number; lng: number }>;
   enabled: boolean;
+  nearest_roads: string | null;
   created_at: string;
 }
 
@@ -455,6 +456,9 @@ export default function AdminZonesPage() {
                     Σημεία
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                    Κοντινοί Δρόμοι
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                     Κατάσταση
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
@@ -473,6 +477,9 @@ export default function AdminZonesPage() {
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500">
                       {zone.coordinates.length} κορυφές
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      {zone.nearest_roads || 'Υπολογισμός...'}
                     </td>
                     <td className="px-6 py-4 text-sm">
                       {zone.enabled ? (

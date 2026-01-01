@@ -139,7 +139,7 @@ function timingSafeEqual(a: string, b: string): boolean {
 function base64UrlEncode(str: string): string {
   const encoder = new TextEncoder();
   const data = encoder.encode(str);
-  return arrayBufferToBase64Url(data);
+  return arrayBufferToBase64Url(data.buffer);
 }
 
 /**

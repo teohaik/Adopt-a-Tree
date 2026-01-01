@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createTreePin, getAllTreePins, initDatabase, getEnabledPlantingZones } from '@/lib/db';
 import { sendConfirmationEmail } from '@/lib/email';
 import { isPointInPlantingZone, getZoneForPoint } from '@/lib/plantingZones';
+import { verifyApiAuth } from '@/lib/apiAuth';
 
 export async function POST(request: NextRequest) {
   try {
@@ -69,7 +70,15 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // Verify authentication
+  if (!(await verifyApiAuth(request))) {
+    return NextResponse.json(
+      { error: 'Unauthorized' },
+      { status: 401 }
+    );
+  }
+
   try {
     // Initialize database if needed
     await initDatabase();

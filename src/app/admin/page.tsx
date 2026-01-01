@@ -60,6 +60,11 @@ export default function AdminPage() {
     a.click();
   };
 
+  const handleLogout = async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    window.location.href = '/admin/login';
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -102,6 +107,12 @@ export default function AdminPage() {
               className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
             >
               Εξαγωγή σε CSV
+            </button>
+            <button
+              onClick={handleLogout}
+              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+            >
+              Αποσύνδεση
             </button>
           </div>
         </div>

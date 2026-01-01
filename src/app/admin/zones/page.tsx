@@ -320,6 +320,11 @@ export default function AdminZonesPage() {
     }
   };
 
+  const handleLogout = async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    window.location.href = '/admin/login';
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -349,6 +354,12 @@ export default function AdminZonesPage() {
             >
               Πίσω στο Χάρτη
             </Link>
+            <button
+              onClick={handleLogout}
+              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+            >
+              Αποσύνδεση
+            </button>
           </div>
         </div>
 

@@ -8,6 +8,7 @@ import {
   togglePlantingZone,
   initDatabase
 } from '@/lib/db';
+import { verifyApiAuth } from '@/lib/apiAuth';
 
 export async function GET(request: NextRequest) {
   try {
@@ -31,6 +32,14 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  // Verify authentication
+  if (!(await verifyApiAuth(request))) {
+    return NextResponse.json(
+      { error: 'Unauthorized' },
+      { status: 401 }
+    );
+  }
+
   try {
     await initDatabase();
 
@@ -70,6 +79,14 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
+  // Verify authentication
+  if (!(await verifyApiAuth(request))) {
+    return NextResponse.json(
+      { error: 'Unauthorized' },
+      { status: 401 }
+    );
+  }
+
   try {
     await initDatabase();
 
@@ -102,6 +119,14 @@ export async function PUT(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
+  // Verify authentication
+  if (!(await verifyApiAuth(request))) {
+    return NextResponse.json(
+      { error: 'Unauthorized' },
+      { status: 401 }
+    );
+  }
+
   try {
     await initDatabase();
 
@@ -128,6 +153,14 @@ export async function DELETE(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
+  // Verify authentication
+  if (!(await verifyApiAuth(request))) {
+    return NextResponse.json(
+      { error: 'Unauthorized' },
+      { status: 401 }
+    );
+  }
+
   try {
     await initDatabase();
 

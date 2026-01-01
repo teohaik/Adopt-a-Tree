@@ -132,7 +132,7 @@ export async function updatePlantingZone(
   description: string,
   coordinates: Array<{ lat: number; lng: number }>,
   enabled: boolean,
-  nearestRoads?: string
+  nearestRoads: string
 ): Promise<PlantingZone> {
   const result = await sql`
     UPDATE planting_zones
@@ -140,7 +140,7 @@ export async function updatePlantingZone(
         description = ${description},
         coordinates = ${JSON.stringify(coordinates)},
         enabled = ${enabled},
-        nearest_roads = ${nearestRoads !== undefined ? nearestRoads : sql`nearest_roads`},
+        nearest_roads = ${nearestRoads},
         updated_at = CURRENT_TIMESTAMP
     WHERE id = ${id}
     RETURNING *

@@ -16,7 +16,7 @@ export default function GuidePage() {
 
           <div className="space-y-4">
             <div className="flex items-start gap-3 p-3 bg-green-50 rounded-lg">
-              <span className="text-2xl">🟢</span>
+              <span className="text-3xl">🌱</span>
               <div>
                 <p className="font-medium text-green-800">Μικρό δέντρο (νεοφυτεμένο / έως 2 μ.)</p>
                 <p className="text-green-600">➡️ 15–25 λίτρα κάθε πότισμα</p>
@@ -24,7 +24,7 @@ export default function GuidePage() {
             </div>
 
             <div className="flex items-start gap-3 p-3 bg-yellow-50 rounded-lg">
-              <span className="text-2xl">🟡</span>
+              <span className="text-3xl">🌲</span>
               <div>
                 <p className="font-medium text-yellow-800">Μεσαίο δέντρο (2–5 μ.)</p>
                 <p className="text-yellow-600">➡️ 30–50 λίτρα κάθε πότισμα</p>
@@ -32,7 +32,7 @@ export default function GuidePage() {
             </div>
 
             <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
-              <span className="text-2xl">🔵</span>
+              <span className="text-3xl">🌳</span>
               <div>
                 <p className="font-medium text-blue-800">Μεγάλο δέντρο (άνω των 5 μ.)</p>
                 <p className="text-blue-600">➡️ 60–100 λίτρα κάθε πότισμα</p>
@@ -101,7 +101,7 @@ export default function GuidePage() {
             <li>Κλαδιά που εμποδίζουν τη διέλευση πεζών</li>
           </ul>
 
-          <p className="mb-2 text-green-700 font-medium">✅ Μπορείτε να τα κόψετε μόνο αν:</p>
+          <p className="mb-2 font-medium">Μπορείτε να τα κόψετε μόνο αν:</p>
           <ul className="list-disc list-inside mb-4 text-gray-600 space-y-1">
             <li>είναι λεπτά</li>
             <li>κόβονται με απλό κλαδευτήρι</li>
@@ -109,7 +109,7 @@ export default function GuidePage() {
           </ul>
 
           <p className="text-red-600 font-medium">❗ Δεν κόβουμε χοντρά ή ψηλά κλαδιά</p>
-          <p className="text-gray-600 mt-2">➡️ Σε αμφιβολία, ενημερώνουμε τον Δήμο Θέρμης</p>
+          <p className="text-gray-600 mt-2">➡️ Σε αμφιβολία, επικοινωνούμε με τη <a href="#contact" className="text-green-600 hover:underline">διεύθυνση πρασίνου</a></p>
         </section>
 
         {/* Observation */}

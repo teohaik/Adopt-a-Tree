@@ -103,10 +103,10 @@ export default function TreeMap({ onPinCreated, existingPins = [], currentUserEm
       .map(zone => {
         const polygon = new google.maps.Polygon({
           paths: zone.coordinates,
-          strokeColor: '#065f46',
+          strokeColor: '#670000',
           strokeOpacity: 0.9,
           strokeWeight: 3,
-          fillColor: '#065f46',
+          fillColor: '#670000',
           fillOpacity: 0.25,
           map: map,
           clickable: !placementMode, // Make polygon non-clickable during placement mode
@@ -241,7 +241,7 @@ export default function TreeMap({ onPinCreated, existingPins = [], currentUserEm
                 <div style="padding: 12px; max-width: 250px;">
                   <strong style="color: #dc2626;">❌ Μη Επιτρεπόμενη Περιοχή</strong>
                   <p style="font-size: 12px; margin-top: 8px; color: #666;">
-                    Η φύτευση δέντρων επιτρέπεται μόνο στις πράσινες περιοχές που έχουν ορίσει ο Δήμος.
+                    Η φύτευση δέντρων επιτρέπεται μόνο στις οριοθετημένες περιοχές που έχει ορίσει ο Δήμος.
                   </p>
                 </div>
               `,
@@ -329,7 +329,7 @@ export default function TreeMap({ onPinCreated, existingPins = [], currentUserEm
       {placementMode && (
         <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-orange-500 text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-3 z-10">
           <span className="text-lg">📍</span>
-          <span className="font-semibold">Κάνε κλικ στο χάρτη για να τοποθετήσεις το δέντρο σου</span>
+          <span className="font-semibold">Κάνε κλικ στο χάρτη για να τοποθετήσεις το δέντρο σου. <br></br> Επιτρέπεται τοποθέτηση μόνο στις οριοθετημένες περιοχές</span>
         </div>
       )}
     </div>

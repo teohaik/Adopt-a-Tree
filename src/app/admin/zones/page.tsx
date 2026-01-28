@@ -46,10 +46,10 @@ function MapComponent({
     zones.forEach(zone => {
       const polygon = new google.maps.Polygon({
         paths: zone.coordinates,
-        strokeColor: zone.enabled ? '#16a34a' : '#9ca3af',
+        strokeColor: zone.enabled ? '#670000' : '#9ca3af',
         strokeOpacity: 0.8,
         strokeWeight: 2,
-        fillColor: zone.enabled ? '#16a34a' : '#9ca3af',
+        fillColor: zone.enabled ? '#670000' : '#9ca3af',
         fillOpacity: 0.15,
         map: map,
       });
@@ -131,10 +131,10 @@ export default function AdminZonesPage() {
     if (coordinates.length >= 3) {
       const polygon = new google.maps.Polygon({
         paths: coordinates,
-        strokeColor: '#16a34a',  // Green color
+        strokeColor: '#670000',  // Municipality color
         strokeOpacity: 0.8,
         strokeWeight: 2,
-        fillColor: '#16a34a',
+        fillColor: '#670000',
         fillOpacity: 0.35,
         map: map,
       });

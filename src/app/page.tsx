@@ -163,7 +163,7 @@ export default function Home() {
               <div className="text-4xl mb-2">📍</div>
               <h3 className="font-semibold text-lg mb-2">1. Διάλεξε Τοποθεσία</h3>
               <p className="text-gray-600 text-sm">
-                Κάνε κλικ στο κουμπί και στη συνέχεια στο χάρτη όπου θα ήθελες να υιοθετήσεις ένα δέντρο
+                Κάνε κλικ στο κουμπί και στη συνέχεια <a className="text-[#670000] font-bold">στη μωβ </a>περιοχή του χάρτη όπου θα ήθελες να υιοθετήσεις ένα δέντρο.
               </p>
             </div>
             <div className="text-center">
@@ -262,6 +262,9 @@ export default function Home() {
             <li>Κράτησε την περιοχή γύρω από το δέντρο καθαρή</li>
             <li>Γίνε πρεσβευτής των δέντρων και ενθάρρυνε άλλους να συμμετάσχουν</li>
           </ul>
+          <p className="mt-6 text-center text-lg">
+            📖 <a href="/guide" className="text-[#670000] font-bold hover:underline">Δες τον οδηγό ποτίσματος</a>
+          </p>
         </div>
       </div>
 

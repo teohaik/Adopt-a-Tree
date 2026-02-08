@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { Analytics } from '@vercel/analytics/react'
 import './globals.css'
 import Footer from '@/components/Footer'
 
@@ -28,6 +29,7 @@ export default function RootLayout({
       <body className="flex flex-col min-h-screen">
         {children}
         <Footer />
+        <Analytics />
       </body>
     </html>
   )

@@ -93,7 +93,7 @@ export async function sendConfirmationEmail(
             <p style="text-align: center;">
               <a href="${treeUrl}" class="button">Δες τα Δέντρα Σου</a>
               <a href="${mapUrl}" class="button">Προβολή στο Google Maps</a>
-              <a href="https://mytree.epi-thermi.gr/guide" class="button">Οδηγός Φύτευσης</a>
+              <a href="https://mytree.epi-thermi.gr/guide" class="button">Οδηγός Ποτίσματος</a>
             </p>
 
             <p>Ευχαριστούμε που συμβάλλεις σε μια πιο πράσινη Θέρμη Θεσσαλονίκης!</p>

@@ -1,5 +1,7 @@
 # Adopt a Tree - Thermi, Thessaloniki
 
+**Current Version: 0.5.0**
+
 A web application that enables community members to adopt and care for trees in Thermi, Thessaloniki.
 
 ## Overview

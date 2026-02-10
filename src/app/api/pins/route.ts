@@ -42,13 +42,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Find which zone the pin belongs to
+    const zone = getZoneForPoint(lat, lng, zones);
+
     // Create the pin in the database
     const pin = await createTreePin(
       lat,
       lng,
       name,
       email,
-      label
+      label,
+      zone?.id
     );
 
     // Send confirmation email

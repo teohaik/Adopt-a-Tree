@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getZoneForPoint, PlantingZone } from '@/lib/plantingZones';
-
 interface TreePin {
   id: number;
   latitude: number;
@@ -11,18 +9,18 @@ interface TreePin {
   user_name: string;
   user_email: string;
   tree_label: string;
+  zone_id: number | null;
+  zone_name: string | null;
   created_at: string;
 }
 
 export default function AdminPage() {
   const [pins, setPins] = useState<TreePin[]>([]);
-  const [zones, setZones] = useState<PlantingZone[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchPins();
-    fetchZones();
   }, []);
 
   const fetchPins = async () => {
@@ -36,25 +34,6 @@ export default function AdminPage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const fetchZones = async () => {
-    try {
-      const response = await fetch('/api/zones?enabled=true');
-      if (response.ok) {
-        const data = await response.json();
-        setZones(data);
-      }
-    } catch (err) {
-      console.error('Failed to fetch zones:', err);
-    }
-  };
-
-  const getZoneName = (pin: TreePin): string => {
-    const lat = typeof pin.latitude === 'string' ? parseFloat(pin.latitude) : pin.latitude;
-    const lng = typeof pin.longitude === 'string' ? parseFloat(pin.longitude) : pin.longitude;
-    const zone = getZoneForPoint(lat, lng, zones);
-    return zone?.name || '—';
   };
 
   const exportToCSV = () => {
@@ -217,7 +196,7 @@ export default function AdminPage() {
                     {pin.user_email}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {getZoneName(pin)}
+                    {pin.zone_name || '—'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {new Date(pin.created_at).toLocaleDateString('el-GR')}

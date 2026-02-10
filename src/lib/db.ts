@@ -36,6 +36,16 @@ export async function initDatabase() {
   } catch (error) {
     // Column might already exist, ignore error
   }
+
+  // Add zone_id column to tree_pins if it doesn't exist
+  try {
+    await sql`
+      ALTER TABLE tree_pins
+      ADD COLUMN IF NOT EXISTS zone_id INTEGER REFERENCES planting_zones(id) ON DELETE SET NULL
+    `;
+  } catch (error) {
+    // Column might already exist, ignore error
+  }
 }
 
 export interface TreePin {
@@ -45,6 +55,8 @@ export interface TreePin {
   user_name: string;
   user_email: string;
   tree_label: string;
+  zone_id: number | null;
+  zone_name: string | null;
   created_at: Date;
 }
 
@@ -53,11 +65,12 @@ export async function createTreePin(
   longitude: number,
   userName: string,
   userEmail: string,
-  treeLabel: string
+  treeLabel: string,
+  zoneId?: number | null
 ): Promise<TreePin> {
   const result = await sql`
-    INSERT INTO tree_pins (latitude, longitude, user_name, user_email, tree_label)
-    VALUES (${latitude}, ${longitude}, ${userName}, ${userEmail}, ${treeLabel})
+    INSERT INTO tree_pins (latitude, longitude, user_name, user_email, tree_label, zone_id)
+    VALUES (${latitude}, ${longitude}, ${userName}, ${userEmail}, ${treeLabel}, ${zoneId || null})
     RETURNING *
   `;
   return result.rows[0] as TreePin;
@@ -65,7 +78,23 @@ export async function createTreePin(
 
 export async function getAllTreePins(): Promise<TreePin[]> {
   const result = await sql`
-    SELECT * FROM tree_pins ORDER BY created_at DESC
+    SELECT tp.*, pz.name as zone_name
+    FROM tree_pins tp
+    LEFT JOIN planting_zones pz ON tp.zone_id = pz.id
+    ORDER BY tp.created_at DESC
+  `;
+  return result.rows as TreePin[];
+}
+
+export async function updateTreePinZone(pinId: number, zoneId: number): Promise<void> {
+  await sql`
+    UPDATE tree_pins SET zone_id = ${zoneId} WHERE id = ${pinId}
+  `;
+}
+
+export async function getPinsWithoutZone(): Promise<TreePin[]> {
+  const result = await sql`
+    SELECT * FROM tree_pins WHERE zone_id IS NULL
   `;
   return result.rows as TreePin[];
 }

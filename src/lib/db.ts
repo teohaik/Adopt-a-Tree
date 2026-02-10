@@ -46,6 +46,44 @@ export async function initDatabase() {
   } catch (error) {
     // Column might already exist, ignore error
   }
+
+  // Tree types table
+  await sql`
+    CREATE TABLE IF NOT EXISTS tree_types (
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(255) NOT NULL UNIQUE,
+      description TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `;
+
+  // Add description column if it doesn't exist (migration for existing tables)
+  try {
+    await sql`
+      ALTER TABLE tree_types
+      ADD COLUMN IF NOT EXISTS description TEXT
+    `;
+  } catch (error) {
+    // Column might already exist, ignore error
+  }
+
+  // Seed initial tree types
+  const initialTypes = ['Λιριόδενδρο', 'Λικιδάμβαρη', 'Φράξος', 'Πλατανομουριά'];
+  for (const typeName of initialTypes) {
+    await sql`
+      INSERT INTO tree_types (name) VALUES (${typeName}) ON CONFLICT (name) DO NOTHING
+    `;
+  }
+
+  // Add tree_type_id column to tree_pins if it doesn't exist
+  try {
+    await sql`
+      ALTER TABLE tree_pins
+      ADD COLUMN IF NOT EXISTS tree_type_id INTEGER REFERENCES tree_types(id) ON DELETE SET NULL
+    `;
+  } catch (error) {
+    // Column might already exist, ignore error
+  }
 }
 
 export interface TreePin {
@@ -57,6 +95,16 @@ export interface TreePin {
   tree_label: string;
   zone_id: number | null;
   zone_name: string | null;
+  tree_type_id: number | null;
+  tree_type_name: string | null;
+  created_at: Date;
+}
+
+// Tree Types
+export interface TreeType {
+  id: number;
+  name: string;
+  description: string | null;
   created_at: Date;
 }
 
@@ -78,9 +126,10 @@ export async function createTreePin(
 
 export async function getAllTreePins(): Promise<TreePin[]> {
   const result = await sql`
-    SELECT tp.*, pz.name as zone_name
+    SELECT tp.*, pz.name as zone_name, tt.name as tree_type_name
     FROM tree_pins tp
     LEFT JOIN planting_zones pz ON tp.zone_id = pz.id
+    LEFT JOIN tree_types tt ON tp.tree_type_id = tt.id
     ORDER BY tp.created_at DESC
   `;
   return result.rows as TreePin[];
@@ -196,4 +245,38 @@ export async function togglePlantingZone(id: number, enabled: boolean): Promise<
       ? JSON.parse(zone.coordinates)
       : zone.coordinates
   } as PlantingZone;
+}
+
+// Tree Types
+export async function getAllTreeTypes(): Promise<TreeType[]> {
+  const result = await sql`
+    SELECT * FROM tree_types ORDER BY name ASC
+  `;
+  return result.rows as TreeType[];
+}
+
+export async function createTreeType(name: string, description?: string): Promise<TreeType> {
+  const result = await sql`
+    INSERT INTO tree_types (name, description) VALUES (${name}, ${description || null}) RETURNING *
+  `;
+  return result.rows[0] as TreeType;
+}
+
+export async function updateTreeType(id: number, name: string, description?: string): Promise<TreeType> {
+  const result = await sql`
+    UPDATE tree_types SET name = ${name}, description = ${description || null} WHERE id = ${id} RETURNING *
+  `;
+  return result.rows[0] as TreeType;
+}
+
+export async function deleteTreeType(id: number): Promise<void> {
+  await sql`
+    DELETE FROM tree_types WHERE id = ${id}
+  `;
+}
+
+export async function updateTreePinType(pinId: number, typeId: number | null): Promise<void> {
+  await sql`
+    UPDATE tree_pins SET tree_type_id = ${typeId} WHERE id = ${pinId}
+  `;
 }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createTreePin, getAllTreePins, deleteTreePin, initDatabase, getEnabledPlantingZones } from '@/lib/db';
+import { createTreePin, getAllTreePins, deleteTreePin, updateTreePinType, initDatabase, getEnabledPlantingZones } from '@/lib/db';
 import { verifyApiAuth } from '@/lib/apiAuth';
 import { sendConfirmationEmail } from '@/lib/email';
 import { isPointInPlantingZone, getZoneForPoint } from '@/lib/plantingZones';
@@ -90,6 +90,27 @@ export async function GET(request: NextRequest) {
       { error: 'Failed to fetch pins' },
       { status: 500 }
     );
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  if (!(await verifyApiAuth(request))) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  try {
+    await initDatabase();
+    const { id, tree_type_id } = await request.json();
+
+    if (!id) {
+      return NextResponse.json({ error: 'Missing pin ID' }, { status: 400 });
+    }
+
+    await updateTreePinType(id, tree_type_id || null);
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error updating pin:', error);
+    return NextResponse.json({ error: 'Failed to update pin' }, { status: 500 });
   }
 }
 

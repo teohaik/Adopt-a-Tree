@@ -11,13 +11,21 @@ interface TreePin {
   tree_label: string;
   zone_id: number | null;
   zone_name: string | null;
+  tree_type_id: number | null;
+  tree_type_name: string | null;
   created_at: string;
+}
+
+interface TreeType {
+  id: number;
+  name: string;
 }
 
 type ViewTab = 'list' | 'byZone';
 
 export default function AdminPage() {
   const [pins, setPins] = useState<TreePin[]>([]);
+  const [treeTypes, setTreeTypes] = useState<TreeType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<ViewTab>('list');
@@ -25,6 +33,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     fetchPins();
+    fetchTreeTypes();
   }, []);
 
   const fetchPins = async () => {
@@ -40,13 +49,48 @@ export default function AdminPage() {
     }
   };
 
+  const fetchTreeTypes = async () => {
+    try {
+      const response = await fetch('/api/tree-types');
+      if (response.ok) {
+        const data = await response.json();
+        setTreeTypes(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch tree types:', err);
+    }
+  };
+
+  const handleTreeTypeChange = async (pinId: number, typeId: string) => {
+    const newTypeId = typeId ? parseInt(typeId, 10) : null;
+    const typeName = newTypeId ? treeTypes.find(t => t.id === newTypeId)?.name || null : null;
+
+    // Optimistic update
+    setPins(pins.map(p => p.id === pinId ? { ...p, tree_type_id: newTypeId, tree_type_name: typeName } : p));
+
+    try {
+      const response = await fetch('/api/pins', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: pinId, tree_type_id: newTypeId }),
+      });
+      if (!response.ok) throw new Error('Failed to update');
+    } catch (err) {
+      // Revert on error
+      fetchPins();
+      alert('Αποτυχία ενημέρωσης είδους δέντρου');
+    }
+  };
+
   const exportToCSV = () => {
-    const headers = ['ID', 'Ετικέτα Δέντρου', 'Όνομα Χρήστη', 'Email Χρήστη', 'Γεωγραφικό Πλάτος', 'Γεωγραφικό Μήκος', 'Ημερομηνία Δημιουργίας'];
+    const headers = ['ID', 'Ετικέτα Δέντρου', 'Είδος Δέντρου', 'Όνομα Χρήστη', 'Email Χρήστη', 'Ζώνη', 'Γεωγραφικό Πλάτος', 'Γεωγραφικό Μήκος', 'Ημερομηνία Δημιουργίας'];
     const csvData = pins.map(pin => [
       pin.id,
       pin.tree_label,
+      pin.tree_type_name || '',
       pin.user_name,
       pin.user_email,
+      pin.zone_name || '',
       pin.latitude,
       pin.longitude,
       new Date(pin.created_at).toLocaleString()
@@ -140,6 +184,12 @@ export default function AdminPage() {
             >
               Πίσω στο Χάρτη
             </Link>
+            <Link
+              href="/admin/tree-types"
+              className="px-4 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700"
+            >
+              Είδη Δέντρων
+            </Link>
             <button
               onClick={exportToCSV}
               className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
@@ -220,6 +270,9 @@ export default function AdminPage() {
                     Ζώνη
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Είδος Δέντρου
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Δημιουργήθηκε
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -244,6 +297,18 @@ export default function AdminPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {pin.zone_name || '—'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <select
+                        value={pin.tree_type_id || ''}
+                        onChange={(e) => handleTreeTypeChange(pin.id, e.target.value)}
+                        className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      >
+                        <option value="">—</option>
+                        {treeTypes.map(type => (
+                          <option key={type.id} value={type.id}>{type.name}</option>
+                        ))}
+                      </select>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {new Date(pin.created_at).toLocaleDateString('el-GR')}
@@ -308,6 +373,7 @@ export default function AdminPage() {
                       <thead className="bg-gray-50">
                         <tr>
                           <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ετικέτα</th>
+                          <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase">Είδος</th>
                           <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase">Υιοθέτης</th>
                           <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
                           <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ημερομηνία</th>
@@ -318,6 +384,18 @@ export default function AdminPage() {
                         {zonePins.map((pin) => (
                           <tr key={pin.id} className="hover:bg-gray-50">
                             <td className="px-6 py-3 text-sm font-medium text-gray-900">{pin.tree_label}</td>
+                            <td className="px-6 py-3 text-sm">
+                              <select
+                                value={pin.tree_type_id || ''}
+                                onChange={(e) => handleTreeTypeChange(pin.id, e.target.value)}
+                                className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                              >
+                                <option value="">—</option>
+                                {treeTypes.map(type => (
+                                  <option key={type.id} value={type.id}>{type.name}</option>
+                                ))}
+                              </select>
+                            </td>
                             <td className="px-6 py-3 text-sm text-gray-900">{pin.user_name}</td>
                             <td className="px-6 py-3 text-sm text-gray-500">{pin.user_email}</td>
                             <td className="px-6 py-3 text-sm text-gray-500">

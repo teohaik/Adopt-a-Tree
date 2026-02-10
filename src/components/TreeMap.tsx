@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { isPointInPlantingZone, PlantingZone } from '@/lib/plantingZones';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 interface TreeMapProps {
   onPinCreated: (lat: number, lng: number) => void;
@@ -19,6 +20,7 @@ export default function TreeMap({ onPinCreated, existingPins = [], currentUserEm
   const [previewMarker, setPreviewMarker] = useState<google.maps.Marker | null>(null);
   const [zonePolygons, setZonePolygons] = useState<google.maps.Polygon[]>([]);
   const [plantingZones, setPlantingZones] = useState<PlantingZone[]>([]);
+  const { t } = useLanguage();
 
   // Load Google Maps script
   useEffect(() => {
@@ -200,7 +202,7 @@ export default function TreeMap({ onPinCreated, existingPins = [], currentUserEm
         content: `
           <div style="padding: 8px;">
             <strong>${pin.tree_label}</strong>
-            ${isUserTree ? '<div style="color: #f97316; font-size: 12px; margin-top: 4px;">🌳 Το Δέντρο Σου</div>' : '<div style="color: #16a34a; font-size: 12px; margin-top: 4px;">🌳</div>'}
+            ${isUserTree ? `<div style="color: #f97316; font-size: 12px; margin-top: 4px;">${t.yourTree}</div>` : '<div style="color: #16a34a; font-size: 12px; margin-top: 4px;">🌳</div>'}
           </div>
         `
       });
@@ -215,7 +217,7 @@ export default function TreeMap({ onPinCreated, existingPins = [], currentUserEm
 
     console.log('Total markers created:', newMarkers.length);
     setMarkers(newMarkers);
-  }, [map, existingPins, isLoaded, currentUserEmail]);
+  }, [map, existingPins, isLoaded, currentUserEmail, t]);
 
   // Handle placement mode
   useEffect(() => {
@@ -239,9 +241,9 @@ export default function TreeMap({ onPinCreated, existingPins = [], currentUserEm
             const infoWindow = new google.maps.InfoWindow({
               content: `
                 <div style="padding: 12px; max-width: 250px;">
-                  <strong style="color: #dc2626;">❌ Μη Επιτρεπόμενη Περιοχή</strong>
+                  <strong style="color: #dc2626;">${t.restrictedAreaTitle}</strong>
                   <p style="font-size: 12px; margin-top: 8px; color: #666;">
-                    Η φύτευση δέντρων επιτρέπεται μόνο στις οριοθετημένες περιοχές που έχει ορίσει ο Δήμος.
+                    ${t.restrictedAreaMessage}
                   </p>
                 </div>
               `,
@@ -296,7 +298,7 @@ export default function TreeMap({ onPinCreated, existingPins = [], currentUserEm
         setPreviewMarker(null);
       }
     }
-  }, [map, isLoaded, placementMode, previewMarker, onPinCreated]);
+  }, [map, isLoaded, placementMode, previewMarker, onPinCreated, t]);
 
   // Update preview marker position when it's dragged
   useEffect(() => {
@@ -322,14 +324,14 @@ export default function TreeMap({ onPinCreated, existingPins = [], currentUserEm
       >
         {!isLoaded && (
           <div className="flex items-center justify-center h-full bg-gray-100 rounded-lg">
-            <p className="text-gray-600">Φόρτωση χάρτη...</p>
+            <p className="text-gray-600">{t.loadingMap}</p>
           </div>
         )}
       </div>
       {placementMode && (
         <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-orange-500 text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-3 z-10">
           <span className="text-lg">📍</span>
-          <span className="font-semibold">Κάνε κλικ στο χάρτη για να τοποθετήσεις το δέντρο σου. <br></br> Επιτρέπεται τοποθέτηση μόνο στις οριοθετημένες περιοχές</span>
+          <span className="font-semibold">{t.placementBanner}</span>
         </div>
       )}
     </div>

@@ -2,20 +2,22 @@ import type { Metadata } from 'next'
 import { Analytics } from '@vercel/analytics/react'
 import './globals.css'
 import Footer from '@/components/Footer'
+import { LanguageProvider } from '@/lib/i18n/LanguageContext'
 
 export const metadata: Metadata = {
-  title: 'Υιοθέτησε ένα Δέντρο - Θέρμη',
-  description: 'Πλατφόρμα υιοθεσίας δέντρων στη Θέρμη Θεσσαλονίκης',
+  title: 'Υιοθέτησε ένα Δέντρο - Θέρμη | Adopt a Tree',
+  description: 'Πλατφόρμα υιοθεσίας δέντρων στη Θέρμη Θεσσαλονίκης / Tree adoption platform in Thermi, Thessaloniki',
   openGraph: {
-    title: 'Υιοθέτησε ένα Δέντρο - Θέρμη',
-    description: 'Βοήθησε να πρασινίσει η Θέρμη Θεσσαλονίκης υιοθετώντας και φροντίζοντας ένα δέντρο',
+    title: 'Υιοθέτησε ένα Δέντρο - Θέρμη | Adopt a Tree',
+    description: 'Βοήθησε να πρασινίσει η Θέρμη Θεσσαλονίκης / Help green Thermi, Thessaloniki by adopting a tree',
     type: 'website',
     locale: 'el_GR',
+    alternateLocale: 'en_US',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Υιοθέτησε ένα Δέντρο - Θέρμη',
-    description: 'Βοήθησε να πρασινίσει η Θέρμη Θεσσαλονίκης υιοθετώντας και φροντίζοντας ένα δέντρο',
+    title: 'Υιοθέτησε ένα Δέντρο - Θέρμη | Adopt a Tree',
+    description: 'Βοήθησε να πρασινίσει η Θέρμη Θεσσαλονίκης / Help green Thermi, Thessaloniki by adopting a tree',
   },
 }
 
@@ -25,10 +27,12 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="el">
       <body className="flex flex-col min-h-screen">
-        {children}
-        <Footer />
+        <LanguageProvider>
+          {children}
+          <Footer />
+        </LanguageProvider>
         <Analytics />
       </body>
     </html>

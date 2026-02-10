@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createTreePin, getAllTreePins, initDatabase, getEnabledPlantingZones } from '@/lib/db';
 import { sendConfirmationEmail } from '@/lib/email';
 import { isPointInPlantingZone, getZoneForPoint } from '@/lib/plantingZones';
+import { translations, Language } from '@/lib/i18n/translations';
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,7 +10,9 @@ export async function POST(request: NextRequest) {
     await initDatabase();
 
     const body = await request.json();
-    const { latitude, longitude, name, email, label } = body;
+    const { latitude, longitude, name, email, label, lang: rawLang } = body;
+    const lang: Language = rawLang === 'en' ? 'en' : 'el';
+    const t = translations[lang];
 
     // Validate input
     if (!latitude || !longitude || !name || !email || !label) {
@@ -30,7 +33,7 @@ export async function POST(request: NextRequest) {
       const zone = getZoneForPoint(lat, lng, zones);
       return NextResponse.json(
         {
-          error: 'Η φύτευση δέντρων επιτρέπεται μόνο στις ορισμένες περιοχές που έχει καθορίσει ο Δήμος. Παρακαλώ επιλέξτε μια τοποθεσία εντός των πράσινων περιοχών.',
+          error: t.errorRestrictedZone,
           inZone: false,
           attemptedZone: zone?.name
         },
@@ -48,7 +51,7 @@ export async function POST(request: NextRequest) {
     );
 
     // Send confirmation email
-    await sendConfirmationEmail(email, name, label, latitude, longitude, pin.id);
+    await sendConfirmationEmail(email, name, label, latitude, longitude, pin.id, lang);
 
     return NextResponse.json(pin, { status: 201 });
   } catch (error: any) {

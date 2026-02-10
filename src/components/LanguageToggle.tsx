@@ -13,27 +13,27 @@ export default function LanguageToggle() {
     >
       <button
         onClick={() => setLanguage('el')}
-        className={`px-2.5 py-1 text-xs font-semibold rounded-full transition-all ${
+        className={`px-2 py-1 text-lg rounded-full transition-all ${
           language === 'el'
-            ? 'bg-green-600 text-white'
-            : 'text-gray-600 hover:text-gray-800'
+            ? 'bg-green-100 ring-2 ring-green-500'
+            : 'opacity-50 hover:opacity-80'
         }`}
         aria-pressed={language === 'el'}
         aria-label="Ελληνικά"
       >
-        EL
+        🇬🇷
       </button>
       <button
         onClick={() => setLanguage('en')}
-        className={`px-2.5 py-1 text-xs font-semibold rounded-full transition-all ${
+        className={`px-2 py-1 text-lg rounded-full transition-all ${
           language === 'en'
-            ? 'bg-green-600 text-white'
-            : 'text-gray-600 hover:text-gray-800'
+            ? 'bg-green-100 ring-2 ring-green-500'
+            : 'opacity-50 hover:opacity-80'
         }`}
         aria-pressed={language === 'en'}
         aria-label="English"
       >
-        EN
+        🇬🇧
       </button>
     </div>
   );

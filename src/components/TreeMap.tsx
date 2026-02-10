@@ -328,10 +328,18 @@ export default function TreeMap({ onPinCreated, existingPins = [], currentUserEm
           </div>
         )}
       </div>
+      {/* Desktop: top pill */}
       {placementMode && (
-        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-orange-500 text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-3 z-10">
+        <div className="hidden md:flex absolute top-4 left-1/2 transform -translate-x-1/2 bg-orange-500 text-white px-6 py-3 rounded-full shadow-lg items-center gap-3 z-10">
           <span className="text-lg">📍</span>
           <span className="font-semibold">{t.placementBanner}</span>
+        </div>
+      )}
+      {/* Mobile: compact bottom snackbar */}
+      {placementMode && (
+        <div className="md:hidden absolute bottom-3 left-3 right-3 bg-orange-500 text-white px-4 py-2.5 rounded-xl shadow-lg flex items-center gap-2 z-10 animate-fade-in">
+          <span>📍</span>
+          <span className="text-sm font-medium flex-1">{t.placementBannerShort}</span>
         </div>
       )}
     </div>

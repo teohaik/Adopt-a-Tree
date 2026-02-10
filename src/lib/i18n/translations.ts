@@ -48,6 +48,7 @@ export interface Translations {
   restrictedAreaMessage: string;
   yourTree: string;
   placementBanner: string;
+  placementBannerShort: string;
 
   // Guide page
   guideTitle: string;
@@ -182,6 +183,7 @@ export const translations: Record<Language, Translations> = {
     restrictedAreaMessage: 'Η φύτευση δέντρων επιτρέπεται μόνο στις οριοθετημένες περιοχές που έχει ορίσει ο Δήμος.',
     yourTree: '🌳 Το Δέντρο Σου',
     placementBanner: 'Κάνε κλικ στο χάρτη για να τοποθετήσεις το δέντρο σου. \n Επιτρέπεται τοποθέτηση μόνο στις οριοθετημένες περιοχές',
+    placementBannerShort: 'Πάτα στη μωβ περιοχή για τοποθέτηση',
 
     // Guide page
     guideTitle: '💧 Οδηγός Ποτίσματος Δέντρων',
@@ -315,6 +317,7 @@ export const translations: Record<Language, Translations> = {
     restrictedAreaMessage: 'Tree planting is only allowed in designated areas marked by the Municipality.',
     yourTree: '🌳 Your Tree',
     placementBanner: 'Click on the map to place your tree. \n Placement is only allowed in designated areas',
+    placementBannerShort: 'Tap the purple area to place your tree',
 
     // Guide page
     guideTitle: '💧 Tree Watering Guide',

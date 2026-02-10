@@ -1,4 +1,5 @@
 import { Resend } from 'resend';
+import { translations, Language } from './i18n/translations';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -8,8 +9,10 @@ export async function sendConfirmationEmail(
   treeLabel: string,
   latitude: number,
   longitude: number,
-  pinId: number
+  pinId: number,
+  lang: Language = 'el'
 ) {
+  const t = translations[lang];
   const mapUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
   const treeUrl = `${appUrl}/?email=${encodeURIComponent(userEmail)}`;
@@ -69,38 +72,38 @@ export async function sendConfirmationEmail(
       <body>
         <div class="container">
           <div class="header">
-            <h1>🌳 Επιβεβαίωση Υιοθεσίας Δέντρου!</h1>
+            <h1>${t.emailTitle}</h1>
           </div>
           <div class="content">
-            <p>Αγαπητέ/ή ${userName},</p>
+            <p>${t.emailGreeting(userName)}</p>
 
-            <p>Συγχαρητήρια! Υιοθέτησες επιτυχώς ένα δέντρο μέσω του προγράμματος Υιοθέτησε ένα Δέντρο.</p>
+            <p>${t.emailCongrats}</p>
 
             <div class="tree-info">
-              <h3>Λεπτομέρειες Δέντρου:</h3>
-              <p><strong>Ετικέτα:</strong> ${treeLabel}</p>
-              <p><strong>Τοποθεσία:</strong> ${latitude.toFixed(6)}, ${longitude.toFixed(6)}</p>
+              <h3>${t.emailDetailsTitle}</h3>
+              <p><strong>${t.emailLabelField}</strong> ${treeLabel}</p>
+              <p><strong>${t.emailLocationField}</strong> ${latitude.toFixed(6)}, ${longitude.toFixed(6)}</p>
             </div>
 
-            <p><strong>Οι Υποχρεώσεις Σου:</strong></p>
+            <p><strong>${t.emailResponsibilitiesTitle}</strong></p>
             <ul>
-              <li>Πότισε το δέντρο σου τακτικά, ειδικά κατά τις ξηρές περιόδους</li>
-              <li>Παρακολούθησε την υγεία του δέντρου και ανάφερε τυχόν προβλήματα</li>
-              <li>Κράτησε την περιοχή γύρω από το δέντρο καθαρή</li>
-              <li>Γίνε πρεσβευτής των δέντρων και ενθάρρυνε άλλους να συμμετάσχουν!</li>
+              <li>${t.emailResp1}</li>
+              <li>${t.emailResp2}</li>
+              <li>${t.emailResp3}</li>
+              <li>${t.emailResp4}</li>
             </ul>
 
             <p style="text-align: center;">
-              <a href="${treeUrl}" class="button">Δες τα Δέντρα Σου</a>
-              <a href="${mapUrl}" class="button">Προβολή στο Google Maps</a>
-              <a href="https://mytree.epi-thermi.gr/guide" class="button">Οδηγός Ποτίσματος</a>
+              <a href="${treeUrl}" class="button">${t.emailViewTrees}</a>
+              <a href="${mapUrl}" class="button">${t.emailViewMaps}</a>
+              <a href="https://mytree.epi-thermi.gr/guide" class="button">${t.emailWateringGuide}</a>
             </p>
 
-            <p>Ευχαριστούμε που συμβάλλεις σε μια πιο πράσινη Θέρμη Θεσσαλονίκης!</p>
+            <p>${t.emailThankYou}</p>
 
             <div class="footer">
-              <p>Αυτό είναι ένα αυτόματο μήνυμα από το Υιοθέτησε ένα Δέντρο</p>
-              <p>Για οποιαδήποτε ερώτηση, επικοινώνησε μαζί μας.</p>
+              <p>${t.emailFooter}</p>
+              <p>${t.emailFooterContact}</p>
             </div>
           </div>
         </div>
@@ -110,9 +113,9 @@ export async function sendConfirmationEmail(
 
   try {
     await resend.emails.send({
-      from: process.env.EMAIL_FROM || 'Υιοθέτησε ένα Δέντρο <onboarding@resend.dev>',
+      from: process.env.EMAIL_FROM || `${t.emailFromName} <onboarding@resend.dev>`,
       to: userEmail,
-      subject: `Επιβεβαίωση Υιοθεσίας: ${treeLabel}`,
+      subject: t.emailSubject(treeLabel),
       html: htmlContent,
     });
   } catch (error) {

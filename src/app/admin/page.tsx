@@ -14,10 +14,14 @@ interface TreePin {
   created_at: string;
 }
 
+type ViewTab = 'list' | 'byZone';
+
 export default function AdminPage() {
   const [pins, setPins] = useState<TreePin[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<ViewTab>('list');
+  const [expandedZones, setExpandedZones] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetchPins();
@@ -78,6 +82,25 @@ export default function AdminPage() {
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' });
     window.location.href = '/admin/login';
+  };
+
+  const pinsByZone = pins.reduce<Record<string, TreePin[]>>((acc, pin) => {
+    const zoneName = pin.zone_name || 'Χωρίς Ζώνη';
+    if (!acc[zoneName]) acc[zoneName] = [];
+    acc[zoneName].push(pin);
+    return acc;
+  }, {});
+
+  const toggleZone = (zoneName: string) => {
+    setExpandedZones(prev => {
+      const next = new Set(prev);
+      if (next.has(zoneName)) {
+        next.delete(zoneName);
+      } else {
+        next.add(zoneName);
+      }
+      return next;
+    });
   };
 
   if (loading) {
@@ -153,84 +176,188 @@ export default function AdminPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-md overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  ID
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Ετικέτα Δέντρου
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Υιοθέτης
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Email
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Ζώνη
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Δημιουργήθηκε
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Ενέργειες
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {pins.map((pin) => (
-                <tr key={pin.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {pin.id}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {pin.tree_label}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {pin.user_name}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {pin.user_email}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {pin.zone_name || '—'}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(pin.created_at).toLocaleDateString('el-GR')}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <div className="flex items-center gap-3">
-                      <a
-                        href={`https://www.google.com/maps?q=${pin.latitude},${pin.longitude}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-green-600 hover:text-green-900"
-                      >
-                        Προβολή στο Χάρτη
-                      </a>
-                      <button
-                        onClick={() => handleDelete(pin)}
-                        className="text-red-500 hover:text-red-700 transition-colors"
-                        title="Διαγραφή"
-                      >
-                        🗑️
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          {pins.length === 0 && (
-            <div className="text-center py-12 text-gray-500">
-              Δεν υιοθετήθηκαν ακόμα δέντρα. Ξεκινήστε προσθέτοντας δέντρα στο χάρτη!
-            </div>
-          )}
+        <div className="flex gap-1 mb-4">
+          <button
+            onClick={() => setActiveTab('list')}
+            className={`px-5 py-2.5 rounded-t-lg font-medium text-sm transition-colors ${
+              activeTab === 'list'
+                ? 'bg-white text-gray-900 shadow-md'
+                : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+            }`}
+          >
+            Λίστα
+          </button>
+          <button
+            onClick={() => setActiveTab('byZone')}
+            className={`px-5 py-2.5 rounded-t-lg font-medium text-sm transition-colors ${
+              activeTab === 'byZone'
+                ? 'bg-white text-gray-900 shadow-md'
+                : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+            }`}
+          >
+            Ανά Ζώνη
+          </button>
         </div>
+
+        {activeTab === 'list' && (
+          <div className="bg-white rounded-lg shadow-md overflow-hidden">
+            <table className="w-full">
+              <thead className="bg-gray-100">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    ID
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Ετικέτα Δέντρου
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Υιοθέτης
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Email
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Ζώνη
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Δημιουργήθηκε
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Ενέργειες
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {pins.map((pin) => (
+                  <tr key={pin.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {pin.id}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {pin.tree_label}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {pin.user_name}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {pin.user_email}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {pin.zone_name || '—'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {new Date(pin.created_at).toLocaleDateString('el-GR')}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <div className="flex items-center gap-3">
+                        <a
+                          href={`https://www.google.com/maps?q=${pin.latitude},${pin.longitude}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-green-600 hover:text-green-900"
+                        >
+                          Προβολή στο Χάρτη
+                        </a>
+                        <button
+                          onClick={() => handleDelete(pin)}
+                          className="text-red-500 hover:text-red-700 transition-colors"
+                          title="Διαγραφή"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {pins.length === 0 && (
+              <div className="text-center py-12 text-gray-500">
+                Δεν υιοθετήθηκαν ακόμα δέντρα. Ξεκινήστε προσθέτοντας δέντρα στο χάρτη!
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'byZone' && (
+          <div className="space-y-4">
+            {Object.entries(pinsByZone).map(([zoneName, zonePins]) => (
+              <div key={zoneName} className="bg-white rounded-lg shadow-md overflow-hidden">
+                <button
+                  onClick={() => toggleZone(zoneName)}
+                  className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className={`text-sm transition-transform ${expandedZones.has(zoneName) ? 'rotate-90' : ''}`}>
+                      ▶
+                    </span>
+                    <span className="font-semibold text-gray-900">{zoneName}</span>
+                    <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                      {zonePins.length} {zonePins.length === 1 ? 'δέντρο' : 'δέντρα'}
+                    </span>
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    {new Set(zonePins.map(p => p.user_email)).size} υιοθέτες
+                  </div>
+                </button>
+
+                {expandedZones.has(zoneName) && (
+                  <div className="border-t">
+                    <table className="w-full">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ετικέτα</th>
+                          <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase">Υιοθέτης</th>
+                          <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                          <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ημερομηνία</th>
+                          <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ενέργειες</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {zonePins.map((pin) => (
+                          <tr key={pin.id} className="hover:bg-gray-50">
+                            <td className="px-6 py-3 text-sm font-medium text-gray-900">{pin.tree_label}</td>
+                            <td className="px-6 py-3 text-sm text-gray-900">{pin.user_name}</td>
+                            <td className="px-6 py-3 text-sm text-gray-500">{pin.user_email}</td>
+                            <td className="px-6 py-3 text-sm text-gray-500">
+                              {new Date(pin.created_at).toLocaleDateString('el-GR')}
+                            </td>
+                            <td className="px-6 py-3 text-sm">
+                              <div className="flex items-center gap-3">
+                                <a
+                                  href={`https://www.google.com/maps?q=${pin.latitude},${pin.longitude}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-green-600 hover:text-green-900"
+                                >
+                                  Χάρτης
+                                </a>
+                                <button
+                                  onClick={() => handleDelete(pin)}
+                                  className="text-red-500 hover:text-red-700 transition-colors"
+                                  title="Διαγραφή"
+                                >
+                                  🗑️
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            ))}
+
+            {pins.length === 0 && (
+              <div className="bg-white rounded-lg shadow-md text-center py-12 text-gray-500">
+                Δεν υιοθετήθηκαν ακόμα δέντρα.
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </main>
   );

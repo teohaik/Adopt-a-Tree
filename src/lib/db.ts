@@ -86,19 +86,6 @@ export async function getAllTreePins(): Promise<TreePin[]> {
   return result.rows as TreePin[];
 }
 
-export async function updateTreePinZone(pinId: number, zoneId: number): Promise<void> {
-  await sql`
-    UPDATE tree_pins SET zone_id = ${zoneId} WHERE id = ${pinId}
-  `;
-}
-
-export async function getPinsWithoutZone(): Promise<TreePin[]> {
-  const result = await sql`
-    SELECT * FROM tree_pins WHERE zone_id IS NULL
-  `;
-  return result.rows as TreePin[];
-}
-
 export async function deleteTreePin(id: number): Promise<void> {
   await sql`
     DELETE FROM tree_pins WHERE id = ${id}

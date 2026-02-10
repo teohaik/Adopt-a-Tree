@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { getZoneForPoint, PlantingZone } from '@/lib/plantingZones';
 
 interface TreePin {
   id: number;
@@ -15,11 +16,13 @@ interface TreePin {
 
 export default function AdminPage() {
   const [pins, setPins] = useState<TreePin[]>([]);
+  const [zones, setZones] = useState<PlantingZone[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchPins();
+    fetchZones();
   }, []);
 
   const fetchPins = async () => {
@@ -33,6 +36,25 @@ export default function AdminPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchZones = async () => {
+    try {
+      const response = await fetch('/api/zones?enabled=true');
+      if (response.ok) {
+        const data = await response.json();
+        setZones(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch zones:', err);
+    }
+  };
+
+  const getZoneName = (pin: TreePin): string => {
+    const lat = typeof pin.latitude === 'string' ? parseFloat(pin.latitude) : pin.latitude;
+    const lng = typeof pin.longitude === 'string' ? parseFloat(pin.longitude) : pin.longitude;
+    const zone = getZoneForPoint(lat, lng, zones);
+    return zone?.name || '—';
   };
 
   const exportToCSV = () => {
@@ -58,6 +80,20 @@ export default function AdminPage() {
     a.href = url;
     a.download = `tree-pins-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
+  };
+
+  const handleDelete = async (pin: TreePin) => {
+    if (!confirm(`Είστε σίγουροι ότι θέλετε να διαγράψετε το δέντρο "${pin.tree_label}" του ${pin.user_name};`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/pins?id=${pin.id}`, { method: 'DELETE' });
+      if (!response.ok) throw new Error('Failed to delete pin');
+      setPins(pins.filter(p => p.id !== pin.id));
+    } catch (err: any) {
+      alert('Αποτυχία διαγραφής: ' + err.message);
+    }
   };
 
   const handleLogout = async () => {
@@ -155,7 +191,7 @@ export default function AdminPage() {
                   Email
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Τοποθεσία
+                  Ζώνη
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Δημιουργήθηκε
@@ -181,20 +217,29 @@ export default function AdminPage() {
                     {pin.user_email}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {parseFloat(pin.latitude as any).toFixed(6)}, {parseFloat(pin.longitude as any).toFixed(6)}
+                    {getZoneName(pin)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {new Date(pin.created_at).toLocaleDateString('el-GR')}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <a
-                      href={`https://www.google.com/maps?q=${pin.latitude},${pin.longitude}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-green-600 hover:text-green-900"
-                    >
-                      Προβολή στο Χάρτη
-                    </a>
+                    <div className="flex items-center gap-3">
+                      <a
+                        href={`https://www.google.com/maps?q=${pin.latitude},${pin.longitude}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-green-600 hover:text-green-900"
+                      >
+                        Προβολή στο Χάρτη
+                      </a>
+                      <button
+                        onClick={() => handleDelete(pin)}
+                        className="text-red-500 hover:text-red-700 transition-colors"
+                        title="Διαγραφή"
+                      >
+                        🗑️
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

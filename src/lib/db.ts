@@ -70,6 +70,12 @@ export async function getAllTreePins(): Promise<TreePin[]> {
   return result.rows as TreePin[];
 }
 
+export async function deleteTreePin(id: number): Promise<void> {
+  await sql`
+    DELETE FROM tree_pins WHERE id = ${id}
+  `;
+}
+
 // Planting Zones
 export interface PlantingZone {
   id: number;

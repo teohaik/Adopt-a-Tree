@@ -6,7 +6,7 @@ import { useLanguage } from '@/lib/i18n/LanguageContext';
 interface PinFormProps {
   latitude: number;
   longitude: number;
-  onSubmit: (data: { name: string; email: string; label: string }) => void;
+  onSubmit: (data: { name: string; email: string; label: string; treeExists: boolean }) => void;
   onCancel: () => void;
 }
 
@@ -14,13 +14,14 @@ export default function PinForm({ latitude, longitude, onSubmit, onCancel }: Pin
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [label, setLabel] = useState('');
+  const [treeExists, setTreeExists] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { t } = useLanguage();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    await onSubmit({ name, email, label });
+    await onSubmit({ name, email, label, treeExists });
     setIsSubmitting(false);
   };
 
@@ -76,6 +77,32 @@ export default function PinForm({ latitude, longitude, onSubmit, onCancel }: Pin
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
               placeholder={t.treeLabelPlaceholder}
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {t.treeExistsLabel}
+            </label>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setTreeExists(!treeExists)}
+                className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 ${
+                  treeExists ? 'bg-green-500' : 'bg-orange-400'
+                }`}
+                aria-checked={treeExists}
+                role="switch"
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                    treeExists ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+              <span className={`text-sm font-medium ${treeExists ? 'text-green-700' : 'text-orange-600'}`}>
+                {treeExists ? t.treeExistsYes : t.treeExistsNo}
+              </span>
+            </div>
           </div>
 
           <div className="flex gap-3 pt-2">

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createTreePin, getAllTreePins, deleteTreePin, updateTreePinType, initDatabase, getEnabledPlantingZones } from '@/lib/db';
+import { createTreePin, getAllTreePins, deleteTreePin, updateTreePinType, updateTreePinExists, initDatabase, getEnabledPlantingZones } from '@/lib/db';
 import { verifyApiAuth } from '@/lib/apiAuth';
 import { sendConfirmationEmail } from '@/lib/email';
 import { isPointInPlantingZone, getZoneForPoint } from '@/lib/plantingZones';
@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
     await initDatabase();
 
     const body = await request.json();
-    const { latitude, longitude, name, email, label, lang: rawLang } = body;
+    const { latitude, longitude, name, email, label, lang: rawLang, treeExists } = body;
     const lang: Language = rawLang === 'en' ? 'en' : 'el';
     const t = translations[lang];
 
@@ -52,7 +52,8 @@ export async function POST(request: NextRequest) {
       name,
       email,
       label,
-      zone?.id
+      zone?.id,
+      treeExists !== false
     );
 
     // Send confirmation email
@@ -100,13 +101,18 @@ export async function PATCH(request: NextRequest) {
 
   try {
     await initDatabase();
-    const { id, tree_type_id } = await request.json();
+    const body = await request.json();
+    const { id, tree_type_id, tree_exists } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'Missing pin ID' }, { status: 400 });
     }
 
-    await updateTreePinType(id, tree_type_id || null);
+    if (tree_exists !== undefined) {
+      await updateTreePinExists(id, Boolean(tree_exists));
+    } else {
+      await updateTreePinType(id, tree_type_id || null);
+    }
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error updating pin:', error);

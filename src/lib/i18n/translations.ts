@@ -38,6 +38,9 @@ export interface Translations {
   yourEmailLabel: string;
   treeLabelLabel: string;
   treeLabelPlaceholder: string;
+  treeExistsLabel: string;
+  treeExistsYes: string;
+  treeExistsNo: string;
   submittingButton: string;
   adoptTreeButton: string;
   disclaimer: string;
@@ -173,6 +176,9 @@ export const translations: Record<Language, Translations> = {
     yourEmailLabel: 'Το Email Σου',
     treeLabelLabel: 'Ετικέτα Δέντρου',
     treeLabelPlaceholder: 'π.χ. Δρυς κοντά στο πάρκο',
+    treeExistsLabel: 'Κατάσταση Δέντρου',
+    treeExistsYes: '🌳 Υπάρχει ήδη',
+    treeExistsNo: '🌱 Χρειάζεται φύτευση',
     submittingButton: 'Υποβολή...',
     adoptTreeButton: 'Υιοθέτησε Δέντρο',
     disclaimer: 'Υιοθετώντας αυτό το δέντρο, συμφωνείς να το συντηρείς και να το ποτίζεις τακτικά. Θα λάβεις email επιβεβαίωσης με την τοποθεσία του δέντρου.',
@@ -307,6 +313,9 @@ export const translations: Record<Language, Translations> = {
     yourEmailLabel: 'Your Email',
     treeLabelLabel: 'Tree Label',
     treeLabelPlaceholder: 'e.g. Oak near the park',
+    treeExistsLabel: 'Tree Status',
+    treeExistsYes: '🌳 Already exists',
+    treeExistsNo: '🌱 Needs to be planted',
     submittingButton: 'Submitting...',
     adoptTreeButton: 'Adopt Tree',
     disclaimer: 'By adopting this tree, you agree to maintain and water it regularly. You will receive a confirmation email with the tree\'s location.',

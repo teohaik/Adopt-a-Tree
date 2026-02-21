@@ -72,7 +72,7 @@ export default function Home() {
     setPlacementMode(false);
   };
 
-  const handleFormSubmit = async (data: { name: string; email: string; label: string }) => {
+  const handleFormSubmit = async (data: { name: string; email: string; label: string; treeExists: boolean }) => {
     if (!selectedLocation) return;
 
     try {
@@ -88,6 +88,7 @@ export default function Home() {
           email: data.email,
           label: data.label,
           lang: language,
+          treeExists: data.treeExists,
         }),
       });
 

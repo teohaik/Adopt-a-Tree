@@ -13,6 +13,7 @@ interface TreePin {
   zone_name: string | null;
   tree_type_id: number | null;
   tree_type_name: string | null;
+  tree_exists: boolean;
   created_at: string;
 }
 
@@ -30,6 +31,7 @@ export default function AdminPage() {
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<ViewTab>('list');
   const [expandedZones, setExpandedZones] = useState<Set<string>>(new Set());
+  const [showOnlyToPlant, setShowOnlyToPlant] = useState(false);
 
   useEffect(() => {
     fetchPins();
@@ -61,6 +63,23 @@ export default function AdminPage() {
     }
   };
 
+  const handleTreeExistsChange = async (pinId: number, treeExists: boolean) => {
+    // Optimistic update
+    setPins(pins.map(p => p.id === pinId ? { ...p, tree_exists: treeExists } : p));
+
+    try {
+      const response = await fetch('/api/pins', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: pinId, tree_exists: treeExists }),
+      });
+      if (!response.ok) throw new Error('Failed to update');
+    } catch (err) {
+      fetchPins();
+      alert('Αποτυχία ενημέρωσης κατάστασης δέντρου');
+    }
+  };
+
   const handleTreeTypeChange = async (pinId: number, typeId: string) => {
     const newTypeId = typeId ? parseInt(typeId, 10) : null;
     const typeName = newTypeId ? treeTypes.find(t => t.id === newTypeId)?.name || null : null;
@@ -83,11 +102,12 @@ export default function AdminPage() {
   };
 
   const exportToCSV = () => {
-    const headers = ['ID', 'Ετικέτα Δέντρου', 'Είδος Δέντρου', 'Όνομα Χρήστη', 'Email Χρήστη', 'Ζώνη', 'Γεωγραφικό Πλάτος', 'Γεωγραφικό Μήκος', 'Ημερομηνία Δημιουργίας'];
-    const csvData = pins.map(pin => [
+    const headers = ['ID', 'Ετικέτα Δέντρου', 'Είδος Δέντρου', 'Κατάσταση', 'Όνομα Χρήστη', 'Email Χρήστη', 'Ζώνη', 'Γεωγραφικό Πλάτος', 'Γεωγραφικό Μήκος', 'Ημερομηνία Δημιουργίας'];
+    const csvData = displayedPins.map(pin => [
       pin.id,
       pin.tree_label,
       pin.tree_type_name || '',
+      pin.tree_exists ? 'Υπάρχει ήδη' : 'Προς φύτευση',
       pin.user_name,
       pin.user_email,
       pin.zone_name || '',
@@ -128,7 +148,10 @@ export default function AdminPage() {
     window.location.href = '/admin/login';
   };
 
-  const pinsByZone = pins.reduce<Record<string, TreePin[]>>((acc, pin) => {
+  const toPlantCount = pins.filter(p => !p.tree_exists).length;
+  const displayedPins = showOnlyToPlant ? pins.filter(p => !p.tree_exists) : pins;
+
+  const pinsByZone = displayedPins.reduce<Record<string, TreePin[]>>((acc, pin) => {
     const zoneName = pin.zone_name || 'Χωρίς Ζώνη';
     if (!acc[zoneName]) acc[zoneName] = [];
     acc[zoneName].push(pin);
@@ -165,7 +188,7 @@ export default function AdminPage() {
 
   return (
     <main className="min-h-screen p-8 bg-gray-50">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-[1600px] mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-4xl font-bold mb-2">Πίνακας Διαχείρισης</h1>
@@ -190,6 +213,16 @@ export default function AdminPage() {
             >
               Είδη Δέντρων
             </Link>
+            <button
+              onClick={() => setShowOnlyToPlant(!showOnlyToPlant)}
+              className={`px-4 py-2 rounded-md font-medium transition-colors ${
+                showOnlyToPlant
+                  ? 'bg-orange-500 text-white hover:bg-orange-600 ring-2 ring-orange-300'
+                  : 'bg-orange-100 text-orange-700 hover:bg-orange-200'
+              }`}
+            >
+              🌱 Προς Φύτευση{toPlantCount > 0 && ` (${toPlantCount})`}
+            </button>
             <button
               onClick={exportToCSV}
               className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
@@ -251,6 +284,7 @@ export default function AdminPage() {
 
         {activeTab === 'list' && (
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
+            <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-100">
                 <tr>
@@ -273,6 +307,9 @@ export default function AdminPage() {
                     Είδος Δέντρου
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Κατάσταση
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Δημιουργήθηκε
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -281,7 +318,7 @@ export default function AdminPage() {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {pins.map((pin) => (
+                {displayedPins.map((pin) => (
                   <tr key={pin.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {pin.id}
@@ -310,6 +347,19 @@ export default function AdminPage() {
                         ))}
                       </select>
                     </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={pin.tree_exists}
+                          onChange={(e) => handleTreeExistsChange(pin.id, e.target.checked)}
+                          className="w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500 cursor-pointer"
+                        />
+                        <span className={pin.tree_exists ? 'text-green-700' : 'text-orange-600'}>
+                          {pin.tree_exists ? '🌳 Υπάρχει' : '🌱 Προς φύτευση'}
+                        </span>
+                      </label>
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {new Date(pin.created_at).toLocaleDateString('el-GR')}
                     </td>
@@ -336,8 +386,9 @@ export default function AdminPage() {
                 ))}
               </tbody>
             </table>
+            </div>
 
-            {pins.length === 0 && (
+            {displayedPins.length === 0 && (
               <div className="text-center py-12 text-gray-500">
                 Δεν υιοθετήθηκαν ακόμα δέντρα. Ξεκινήστε προσθέτοντας δέντρα στο χάρτη!
               </div>
@@ -368,12 +419,13 @@ export default function AdminPage() {
                 </button>
 
                 {expandedZones.has(zoneName) && (
-                  <div className="border-t">
+                  <div className="border-t overflow-x-auto">
                     <table className="w-full">
                       <thead className="bg-gray-50">
                         <tr>
                           <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ετικέτα</th>
                           <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase">Είδος</th>
+                          <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase">Κατάσταση</th>
                           <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase">Υιοθέτης</th>
                           <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
                           <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ημερομηνία</th>
@@ -395,6 +447,19 @@ export default function AdminPage() {
                                   <option key={type.id} value={type.id}>{type.name}</option>
                                 ))}
                               </select>
+                            </td>
+                            <td className="px-6 py-3 text-sm">
+                              <label className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={pin.tree_exists}
+                                  onChange={(e) => handleTreeExistsChange(pin.id, e.target.checked)}
+                                  className="w-4 h-4 rounded border-gray-300 text-green-600 focus:ring-green-500 cursor-pointer"
+                                />
+                                <span className={pin.tree_exists ? 'text-green-700' : 'text-orange-600'}>
+                                  {pin.tree_exists ? '🌳 Υπάρχει' : '🌱 Προς φύτευση'}
+                                </span>
+                              </label>
                             </td>
                             <td className="px-6 py-3 text-sm text-gray-900">{pin.user_name}</td>
                             <td className="px-6 py-3 text-sm text-gray-500">{pin.user_email}</td>

@@ -84,6 +84,16 @@ export async function initDatabase() {
   } catch (error) {
     // Column might already exist, ignore error
   }
+
+  // Add tree_exists column to tree_pins if it doesn't exist
+  try {
+    await sql`
+      ALTER TABLE tree_pins
+      ADD COLUMN IF NOT EXISTS tree_exists BOOLEAN DEFAULT true
+    `;
+  } catch (error) {
+    // Column might already exist, ignore error
+  }
 }
 
 export interface TreePin {
@@ -97,6 +107,7 @@ export interface TreePin {
   zone_name: string | null;
   tree_type_id: number | null;
   tree_type_name: string | null;
+  tree_exists: boolean;
   created_at: Date;
 }
 
@@ -114,11 +125,12 @@ export async function createTreePin(
   userName: string,
   userEmail: string,
   treeLabel: string,
-  zoneId?: number | null
+  zoneId?: number | null,
+  treeExists: boolean = true
 ): Promise<TreePin> {
   const result = await sql`
-    INSERT INTO tree_pins (latitude, longitude, user_name, user_email, tree_label, zone_id)
-    VALUES (${latitude}, ${longitude}, ${userName}, ${userEmail}, ${treeLabel}, ${zoneId || null})
+    INSERT INTO tree_pins (latitude, longitude, user_name, user_email, tree_label, zone_id, tree_exists)
+    VALUES (${latitude}, ${longitude}, ${userName}, ${userEmail}, ${treeLabel}, ${zoneId || null}, ${treeExists})
     RETURNING *
   `;
   return result.rows[0] as TreePin;
@@ -278,5 +290,11 @@ export async function deleteTreeType(id: number): Promise<void> {
 export async function updateTreePinType(pinId: number, typeId: number | null): Promise<void> {
   await sql`
     UPDATE tree_pins SET tree_type_id = ${typeId} WHERE id = ${pinId}
+  `;
+}
+
+export async function updateTreePinExists(pinId: number, treeExists: boolean): Promise<void> {
+  await sql`
+    UPDATE tree_pins SET tree_exists = ${treeExists} WHERE id = ${pinId}
   `;
 }

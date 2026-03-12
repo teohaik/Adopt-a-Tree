@@ -12,6 +12,17 @@ interface TreeMapProps {
   onPlacementComplete: () => void;
 }
 
+interface SuggestionCoords {
+  lat: number;
+  lng: number;
+}
+
+interface SuggestionForm {
+  name: string;
+  email: string;
+  description: string;
+}
+
 export default function TreeMap({ onPinCreated, existingPins = [], currentUserEmail, placementMode, onPlacementComplete }: TreeMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<google.maps.Map | null>(null);
@@ -20,6 +31,12 @@ export default function TreeMap({ onPinCreated, existingPins = [], currentUserEm
   const [previewMarker, setPreviewMarker] = useState<google.maps.Marker | null>(null);
   const [zonePolygons, setZonePolygons] = useState<google.maps.Polygon[]>([]);
   const [plantingZones, setPlantingZones] = useState<PlantingZone[]>([]);
+  const [suggestionCoords, setSuggestionCoords] = useState<SuggestionCoords | null>(null);
+  const [suggestionForm, setSuggestionForm] = useState<SuggestionForm>({ name: '', email: '', description: '' });
+  const [suggestionSubmitting, setSuggestionSubmitting] = useState(false);
+  const [suggestionSuccess, setSuggestionSuccess] = useState(false);
+  const [locating, setLocating] = useState(false);
+  const [locationMarker, setLocationMarker] = useState<google.maps.Marker | null>(null);
   const { t } = useLanguage();
 
   // Load Google Maps script
@@ -219,6 +236,18 @@ export default function TreeMap({ onPinCreated, existingPins = [], currentUserEm
     setMarkers(newMarkers);
   }, [map, existingPins, isLoaded, currentUserEmail, t]);
 
+  // Register global callback for zone suggestion (used by InfoWindow button)
+  useEffect(() => {
+    (window as any).__openZoneSuggestion = (lat: number, lng: number) => {
+      setSuggestionCoords({ lat, lng });
+      setSuggestionForm({ name: '', email: '', description: '' });
+      setSuggestionSuccess(false);
+    };
+    return () => {
+      delete (window as any).__openZoneSuggestion;
+    };
+  }, []);
+
   // Handle placement mode
   useEffect(() => {
     if (!map || !isLoaded) return;
@@ -237,20 +266,26 @@ export default function TreeMap({ onPinCreated, existingPins = [], currentUserEm
 
           // Check if location is within allowed planting zones
           if (!isPointInPlantingZone(lat, lng, plantingZones)) {
-            // Show error message
+            // Show error message with suggestion button
             const infoWindow = new google.maps.InfoWindow({
               content: `
-                <div style="padding: 12px; max-width: 250px;">
+                <div style="padding: 12px; max-width: 270px;">
                   <strong style="color: #dc2626;">${t.restrictedAreaTitle}</strong>
-                  <p style="font-size: 12px; margin-top: 8px; color: #666;">
+                  <p style="font-size: 12px; margin-top: 8px; color: #555;">
                     ${t.restrictedAreaMessage}
                   </p>
+                  <button
+                    onclick="window.__openZoneSuggestion(${lat}, ${lng})"
+                    style="margin-top: 10px; width: 100%; padding: 7px 12px; background: #7c3aed; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600;"
+                  >
+                    ${t.suggestZoneButton}
+                  </button>
                 </div>
               `,
               position: { lat, lng },
             });
             infoWindow.open(map);
-            setTimeout(() => infoWindow.close(), 4000);
+            setTimeout(() => infoWindow.close(), 8000);
             return;
           }
 
@@ -316,6 +351,76 @@ export default function TreeMap({ onPinCreated, existingPins = [], currentUserEm
     };
   }, [previewMarker, onPinCreated]);
 
+  const handleLocateMe = () => {
+    if (!map || !navigator.geolocation) return;
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude: lat, longitude: lng } = position.coords;
+        map.panTo({ lat, lng });
+        map.setZoom(17);
+
+        // Remove previous location marker
+        if (locationMarker) locationMarker.setMap(null);
+
+        const svgIcon = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36">
+            <circle cx="18" cy="18" r="10" fill="#2563eb" stroke="white" stroke-width="3"/>
+            <circle cx="18" cy="18" r="16" fill="#2563eb" fill-opacity="0.2"/>
+          </svg>
+        `;
+        const marker = new google.maps.Marker({
+          position: { lat, lng },
+          map,
+          icon: {
+            url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svgIcon),
+            scaledSize: new google.maps.Size(36, 36),
+            anchor: new google.maps.Point(18, 18),
+          },
+          title: t.yourLocation,
+          optimized: false,
+          zIndex: 999,
+        });
+        setLocationMarker(marker);
+        setLocating(false);
+      },
+      () => {
+        setLocating(false);
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
+
+  const handleSuggestionSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!suggestionCoords) return;
+    setSuggestionSubmitting(true);
+    try {
+      const res = await fetch('/api/zone-suggestions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          latitude: suggestionCoords.lat,
+          longitude: suggestionCoords.lng,
+          user_name: suggestionForm.name,
+          user_email: suggestionForm.email,
+          description: suggestionForm.description,
+        }),
+      });
+      if (res.ok) {
+        setSuggestionSuccess(true);
+        setTimeout(() => {
+          setSuggestionCoords(null);
+          setSuggestionSuccess(false);
+        }, 3000);
+      }
+    } catch {
+      // silent fail — form remains open
+    } finally {
+      setSuggestionSubmitting(false);
+    }
+  };
+
   return (
     <div className="relative">
       <div
@@ -328,6 +433,96 @@ export default function TreeMap({ onPinCreated, existingPins = [], currentUserEm
           </div>
         )}
       </div>
+      {/* Locate me button */}
+      {isLoaded && (
+        <button
+          onClick={handleLocateMe}
+          disabled={locating}
+          title={t.locateMe}
+          className="absolute bottom-24 right-3 z-10 bg-white rounded-full w-10 h-10 shadow-md flex items-center justify-center hover:bg-gray-50 transition-colors disabled:opacity-60 border border-gray-200"
+        >
+          {locating ? (
+            <svg className="w-5 h-5 text-blue-600 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+            </svg>
+          ) : (
+            <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="4"/>
+              <path d="M12 2v2M12 20v2M2 12h2M20 12h2"/>
+              <path d="M12 8a4 4 0 100 8 4 4 0 000-8z" fill="currentColor" fillOpacity="0.15"/>
+            </svg>
+          )}
+        </button>
+      )}
+
+      {/* Zone suggestion form overlay */}
+      {suggestionCoords && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40 rounded-lg">
+          <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm mx-4">
+            {suggestionSuccess ? (
+              <div className="text-center py-4">
+                <div className="text-4xl mb-3">✅</div>
+                <p className="font-semibold text-green-700">{t.suggestZoneSuccess}</p>
+              </div>
+            ) : (
+              <>
+                <h3 className="text-lg font-bold text-gray-900 mb-1">{t.suggestZoneTitle}</h3>
+                <p className="text-sm text-gray-500 mb-4">{t.suggestZoneIntro}</p>
+                <form onSubmit={handleSuggestionSubmit} className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{t.suggestZoneNameLabel}</label>
+                    <input
+                      type="text"
+                      required
+                      value={suggestionForm.name}
+                      onChange={e => setSuggestionForm(f => ({ ...f, name: e.target.value }))}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{t.suggestZoneEmailLabel}</label>
+                    <input
+                      type="email"
+                      required
+                      value={suggestionForm.email}
+                      onChange={e => setSuggestionForm(f => ({ ...f, email: e.target.value }))}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{t.suggestZoneDescriptionLabel}</label>
+                    <textarea
+                      rows={3}
+                      value={suggestionForm.description}
+                      onChange={e => setSuggestionForm(f => ({ ...f, description: e.target.value }))}
+                      placeholder={t.suggestZoneDescriptionPlaceholder}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+                    />
+                  </div>
+                  <div className="flex gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setSuggestionCoords(null)}
+                      className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm hover:bg-gray-50"
+                    >
+                      {t.suggestZoneCancel}
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={suggestionSubmitting}
+                      className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-semibold hover:bg-purple-700 disabled:opacity-60"
+                    >
+                      {suggestionSubmitting ? t.suggestZoneSubmitting : t.suggestZoneSubmit}
+                    </button>
+                  </div>
+                </form>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Desktop: top pill */}
       {placementMode && (
         <div className="hidden md:flex absolute top-4 left-1/2 transform -translate-x-1/2 bg-orange-500 text-white px-6 py-3 rounded-full shadow-lg items-center gap-3 z-10">

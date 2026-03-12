@@ -1,10 +1,17 @@
+'use client';
+
 import packageJson from '../../package.json';
+import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 export default function Footer() {
+  const { t } = useLanguage();
   return (
     <footer className="bg-gray-50 border-t border-gray-200 mt-auto">
       <div className="container mx-auto px-4 py-6">
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-600">
+        <div className="relative flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-600">
+          <div className="sm:absolute sm:left-1/2 sm:-translate-x-1/2 text-center text-gray-500 text-xs sm:text-sm">
+            {t.footerCredit}
+          </div>
           <div className="flex items-center gap-2">
             <span className="font-semibold">Version {packageJson.version}</span>
           </div>

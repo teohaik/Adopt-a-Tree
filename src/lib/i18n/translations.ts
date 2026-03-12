@@ -49,6 +49,19 @@ export interface Translations {
   loadingMap: string;
   restrictedAreaTitle: string;
   restrictedAreaMessage: string;
+  suggestZoneButton: string;
+  suggestZoneTitle: string;
+  suggestZoneIntro: string;
+  suggestZoneNameLabel: string;
+  suggestZoneEmailLabel: string;
+  suggestZoneDescriptionLabel: string;
+  suggestZoneDescriptionPlaceholder: string;
+  suggestZoneSubmit: string;
+  suggestZoneSubmitting: string;
+  suggestZoneSuccess: string;
+  suggestZoneCancel: string;
+  locateMe: string;
+  yourLocation: string;
   yourTree: string;
   placementBanner: string;
   placementBannerShort: string;
@@ -133,6 +146,9 @@ export interface Translations {
   emailFooter: string;
   emailFooterContact: string;
 
+  // Footer
+  footerCredit: string;
+
   // API errors
   errorRestrictedZone: string;
 }
@@ -187,6 +203,19 @@ export const translations: Record<Language, Translations> = {
     loadingMap: 'Φόρτωση χάρτη...',
     restrictedAreaTitle: '❌ Μη επιτρεπόμενη περιοχή',
     restrictedAreaMessage: 'Η φύτευση δέντρων επιτρέπεται μόνο στις οριοθετημένες περιοχές που έχει ορίσει ο Δήμος.',
+    suggestZoneButton: '💡 Πρότεινε αυτή την περιοχή',
+    suggestZoneTitle: 'Πρότεινε νέα Ζώνη Φύτευσης',
+    suggestZoneIntro: 'Βοήθησέ μας να επεκτείνουμε τις ζώνες φύτευσης. Περίγραψε την περιοχή που σε ενδιαφέρει.',
+    suggestZoneNameLabel: 'Το Όνομά Σου',
+    suggestZoneEmailLabel: 'Το Email Σου',
+    suggestZoneDescriptionLabel: 'Περιγραφή Περιοχής',
+    suggestZoneDescriptionPlaceholder: 'π.χ. Πράσινη περιοχή στην οδό Ανθέων ή στη διασταύρωση Μάρκου & Πύργου',
+    suggestZoneSubmit: 'Αποστολή Πρότασης',
+    suggestZoneSubmitting: 'Αποστολή...',
+    suggestZoneSuccess: 'Ευχαριστούμε! Η πρότασή σου θα εξεταστεί από τον Δήμο.',
+    suggestZoneCancel: 'Ακύρωση',
+    locateMe: 'Εντοπισμός τοποθεσίας μου',
+    yourLocation: 'Η τοποθεσία μου',
     yourTree: '🌳 Το Δέντρο Σου',
     placementBanner: 'Κάνε κλικ στο χάρτη για να τοποθετήσεις το δέντρο σου. \n Επιτρέπεται τοποθέτηση μόνο στις οριοθετημένες περιοχές',
     placementBannerShort: 'Πάτα στη μωβ περιοχή για τοποθέτηση',
@@ -271,6 +300,9 @@ export const translations: Record<Language, Translations> = {
     emailFooter: 'Αυτό είναι ένα αυτόματο μήνυμα από το Υιοθέτησε ένα Δέντρο',
     emailFooterContact: 'Για οποιαδήποτε ερώτηση, επικοινώνησε μαζί μας.',
 
+    // Footer
+    footerCredit: 'Ιδέα και υλοποίηση: Σύλλογος ΕΠΙ',
+
     // API errors
     errorRestrictedZone: 'Η φύτευση δέντρων επιτρέπεται μόνο στις ορισμένες περιοχές που έχει καθορίσει ο Δήμος. Παρακαλώ επιλέξτε μια τοποθεσία εντός των πράσινων περιοχών.',
   },
@@ -324,6 +356,19 @@ export const translations: Record<Language, Translations> = {
     loadingMap: 'Loading map...',
     restrictedAreaTitle: '❌ Restricted Area',
     restrictedAreaMessage: 'Tree planting is only allowed in designated areas marked by the Municipality.',
+    suggestZoneButton: '💡 Suggest this area',
+    suggestZoneTitle: 'Suggest a New Planting Zone',
+    suggestZoneIntro: 'Help us expand the planting zones. Describe the area you\'re interested in.',
+    suggestZoneNameLabel: 'Your Name',
+    suggestZoneEmailLabel: 'Your Email',
+    suggestZoneDescriptionLabel: 'Area Description',
+    suggestZoneDescriptionPlaceholder: 'e.g. Green area in Flower St. or at the corner of Mark and Tower St.',
+    suggestZoneSubmit: 'Send Suggestion',
+    suggestZoneSubmitting: 'Sending...',
+    suggestZoneSuccess: 'Thank you! Your suggestion will be reviewed by the Municipality.',
+    suggestZoneCancel: 'Cancel',
+    locateMe: 'Locate me',
+    yourLocation: 'My location',
     yourTree: '🌳 Your Tree',
     placementBanner: 'Click on the map to place your tree. \n Placement is only allowed in designated areas',
     placementBannerShort: 'Tap the purple area to place your tree',
@@ -407,6 +452,9 @@ export const translations: Record<Language, Translations> = {
     emailThankYou: 'Thank you for contributing to a greener Thermi, Thessaloniki!',
     emailFooter: 'This is an automated message from Adopt a Tree',
     emailFooterContact: 'For any questions, please contact us.',
+
+    // Footer
+    footerCredit: 'Concept & implementation: EPI Association',
 
     // API errors
     errorRestrictedZone: 'Tree planting is only allowed in designated areas marked by the Municipality. Please select a location within the marked areas.',

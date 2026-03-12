@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
+import Image from 'next/image';
+import Link from 'next/link';
 import PinForm from '@/components/PinForm';
 import LanguageToggle from '@/components/LanguageToggle';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
@@ -145,13 +147,21 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-green-50 to-white">
       <div className="container mx-auto px-4 py-8">
-        <div className="text-center mb-8">
-          <h1 className="text-5xl font-bold mb-4 text-green-800">
-            {t.mainTitle}
-          </h1>
-          <p className="text-lg text-gray-700 mb-8">
-            {t.mainSubtitle}
-          </p>
+        <div className="flex items-center gap-6 mb-8">
+          <Link href="/">
+            <Image
+              src="/images/epi-header-logo.png"
+              alt="Logo"
+              width={160}
+              height={80}
+              className="h-auto w-auto max-h-20 flex-shrink-0"
+              priority
+            />
+          </Link>
+          <div>
+            <h1 className="text-4xl font-bold text-green-800">{t.mainTitle}</h1>
+            <p className="text-lg text-gray-700 mt-1">{t.mainSubtitle}</p>
+          </div>
         </div>
 
         {showSuccess && (

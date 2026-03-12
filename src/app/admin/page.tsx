@@ -22,11 +22,23 @@ interface TreeType {
   name: string;
 }
 
-type ViewTab = 'list' | 'byZone';
+interface ZoneSuggestion {
+  id: number;
+  latitude: number;
+  longitude: number;
+  user_name: string;
+  user_email: string;
+  description: string | null;
+  status: 'pending' | 'reviewed';
+  created_at: string;
+}
+
+type ViewTab = 'list' | 'byZone' | 'suggestions';
 
 export default function AdminPage() {
   const [pins, setPins] = useState<TreePin[]>([]);
   const [treeTypes, setTreeTypes] = useState<TreeType[]>([]);
+  const [suggestions, setSuggestions] = useState<ZoneSuggestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<ViewTab>('list');
@@ -36,6 +48,7 @@ export default function AdminPage() {
   useEffect(() => {
     fetchPins();
     fetchTreeTypes();
+    fetchSuggestions();
   }, []);
 
   const fetchPins = async () => {
@@ -60,6 +73,42 @@ export default function AdminPage() {
       }
     } catch (err) {
       console.error('Failed to fetch tree types:', err);
+    }
+  };
+
+  const fetchSuggestions = async () => {
+    try {
+      const response = await fetch('/api/zone-suggestions');
+      if (response.ok) {
+        const data = await response.json();
+        setSuggestions(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch suggestions:', err);
+    }
+  };
+
+  const handleMarkReviewed = async (id: number, currentStatus: string) => {
+    const newStatus = currentStatus === 'pending' ? 'reviewed' : 'pending';
+    setSuggestions(suggestions.map(s => s.id === id ? { ...s, status: newStatus } : s));
+    try {
+      await fetch('/api/zone-suggestions', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, status: newStatus }),
+      });
+    } catch {
+      fetchSuggestions();
+    }
+  };
+
+  const handleDeleteSuggestion = async (id: number) => {
+    if (!confirm('Διαγραφή πρότασης;')) return;
+    setSuggestions(suggestions.filter(s => s.id !== id));
+    try {
+      await fetch(`/api/zone-suggestions?id=${id}`, { method: 'DELETE' });
+    } catch {
+      fetchSuggestions();
     }
   };
 
@@ -280,6 +329,21 @@ export default function AdminPage() {
           >
             Ανά Ζώνη
           </button>
+          <button
+            onClick={() => setActiveTab('suggestions')}
+            className={`px-5 py-2.5 rounded-t-lg font-medium text-sm transition-colors flex items-center gap-2 ${
+              activeTab === 'suggestions'
+                ? 'bg-white text-gray-900 shadow-md'
+                : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+            }`}
+          >
+            💡 Προτάσεις Ζωνών
+            {suggestions.filter(s => s.status === 'pending').length > 0 && (
+              <span className="bg-purple-600 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
+                {suggestions.filter(s => s.status === 'pending').length}
+              </span>
+            )}
+          </button>
         </div>
 
         {activeTab === 'list' && (
@@ -497,6 +561,84 @@ export default function AdminPage() {
             {pins.length === 0 && (
               <div className="bg-white rounded-lg shadow-md text-center py-12 text-gray-500">
                 Δεν υιοθετήθηκαν ακόμα δέντρα.
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'suggestions' && (
+          <div className="bg-white rounded-lg shadow-md overflow-hidden">
+            {suggestions.length === 0 ? (
+              <div className="text-center py-12 text-gray-500">
+                Δεν υπάρχουν προτάσεις ζωνών ακόμα.
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-100">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Χρήστης</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Περιγραφή</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Συντεταγμένες</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Κατάσταση</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ημερομηνία</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ενέργειες</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {suggestions.map(s => (
+                      <tr key={s.id} className={`hover:bg-gray-50 ${s.status === 'reviewed' ? 'opacity-60' : ''}`}>
+                        <td className="px-6 py-4 text-sm text-gray-900">{s.id}</td>
+                        <td className="px-6 py-4 text-sm text-gray-900">{s.user_name}</td>
+                        <td className="px-6 py-4 text-sm text-gray-500">{s.user_email}</td>
+                        <td className="px-6 py-4 text-sm text-gray-700 max-w-xs">{s.description || '—'}</td>
+                        <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
+                          {parseFloat(String(s.latitude)).toFixed(5)}, {parseFloat(String(s.longitude)).toFixed(5)}
+                        </td>
+                        <td className="px-6 py-4 text-sm whitespace-nowrap">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            s.status === 'pending'
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : 'bg-green-100 text-green-800'
+                          }`}>
+                            {s.status === 'pending' ? '⏳ Εκκρεμεί' : '✅ Εξετάστηκε'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
+                          {new Date(s.created_at).toLocaleDateString('el-GR')}
+                        </td>
+                        <td className="px-6 py-4 text-sm whitespace-nowrap">
+                          <div className="flex items-center gap-3">
+                            <a
+                              href={`https://www.google.com/maps?q=${s.latitude},${s.longitude}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:text-blue-900"
+                            >
+                              Χάρτης
+                            </a>
+                            <button
+                              onClick={() => handleMarkReviewed(s.id, s.status)}
+                              className="text-purple-600 hover:text-purple-900 text-xs"
+                              title={s.status === 'pending' ? 'Σημείωση ως εξετασμένο' : 'Επαναφορά σε εκκρεμές'}
+                            >
+                              {s.status === 'pending' ? '✅' : '↩️'}
+                            </button>
+                            <button
+                              onClick={() => handleDeleteSuggestion(s.id)}
+                              className="text-red-500 hover:text-red-700"
+                              title="Διαγραφή"
+                            >
+                              🗑️
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>

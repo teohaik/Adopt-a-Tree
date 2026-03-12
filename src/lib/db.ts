@@ -94,6 +94,20 @@ export async function initDatabase() {
   } catch (error) {
     // Column might already exist, ignore error
   }
+
+  // Zone suggestions table
+  await sql`
+    CREATE TABLE IF NOT EXISTS zone_suggestions (
+      id SERIAL PRIMARY KEY,
+      latitude DECIMAL(10, 8) NOT NULL,
+      longitude DECIMAL(11, 8) NOT NULL,
+      user_name VARCHAR(255) NOT NULL,
+      user_email VARCHAR(255) NOT NULL,
+      description TEXT,
+      status VARCHAR(50) DEFAULT 'pending',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `;
 }
 
 export interface TreePin {
@@ -296,5 +310,51 @@ export async function updateTreePinType(pinId: number, typeId: number | null): P
 export async function updateTreePinExists(pinId: number, treeExists: boolean): Promise<void> {
   await sql`
     UPDATE tree_pins SET tree_exists = ${treeExists} WHERE id = ${pinId}
+  `;
+}
+
+// Zone Suggestions
+export interface ZoneSuggestion {
+  id: number;
+  latitude: number;
+  longitude: number;
+  user_name: string;
+  user_email: string;
+  description: string | null;
+  status: 'pending' | 'reviewed';
+  created_at: Date;
+}
+
+export async function createZoneSuggestion(
+  latitude: number,
+  longitude: number,
+  userName: string,
+  userEmail: string,
+  description?: string
+): Promise<ZoneSuggestion> {
+  const result = await sql`
+    INSERT INTO zone_suggestions (latitude, longitude, user_name, user_email, description)
+    VALUES (${latitude}, ${longitude}, ${userName}, ${userEmail}, ${description || null})
+    RETURNING *
+  `;
+  return result.rows[0] as ZoneSuggestion;
+}
+
+export async function getAllZoneSuggestions(): Promise<ZoneSuggestion[]> {
+  const result = await sql`
+    SELECT * FROM zone_suggestions ORDER BY created_at DESC
+  `;
+  return result.rows as ZoneSuggestion[];
+}
+
+export async function deleteZoneSuggestion(id: number): Promise<void> {
+  await sql`
+    DELETE FROM zone_suggestions WHERE id = ${id}
+  `;
+}
+
+export async function updateZoneSuggestionStatus(id: number, status: 'pending' | 'reviewed'): Promise<void> {
+  await sql`
+    UPDATE zone_suggestions SET status = ${status} WHERE id = ${id}
   `;
 }

@@ -5,6 +5,7 @@ import Footer from '@/components/Footer'
 import { LanguageProvider } from '@/lib/i18n/LanguageContext'
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://mytree.epi-thermi.gr'),
   title: 'Υιοθέτησε ένα Δέντρο - Θέρμη | Adopt a Tree',
   description: 'Πλατφόρμα υιοθεσίας δέντρων στη Θέρμη Θεσσαλονίκης / Tree adoption platform in Thermi, Thessaloniki',
   icons: {

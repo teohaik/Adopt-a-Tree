@@ -150,8 +150,8 @@ export default function Home() {
         <div className="flex items-center gap-6 mb-8">
           <Link href="/">
             <Image
-              src="/images/epi-header-logo.png"
-              alt="Logo"
+              src="/images/mytree-logo-header-1.png"
+              alt="My Tree Logo"
               width={160}
               height={80}
               className="h-auto w-auto max-h-20 flex-shrink-0"

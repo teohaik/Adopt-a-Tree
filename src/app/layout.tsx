@@ -7,6 +7,11 @@ import { LanguageProvider } from '@/lib/i18n/LanguageContext'
 export const metadata: Metadata = {
   title: 'Υιοθέτησε ένα Δέντρο - Θέρμη | Adopt a Tree',
   description: 'Πλατφόρμα υιοθεσίας δέντρων στη Θέρμη Θεσσαλονίκης / Tree adoption platform in Thermi, Thessaloniki',
+  icons: {
+    icon: '/images/mytree-icon.png',
+    shortcut: '/images/mytree-icon.png',
+    apple: '/images/mytree-icon.png',
+  },
   openGraph: {
     title: 'Υιοθέτησε ένα Δέντρο - Θέρμη | Adopt a Tree',
     description: 'Βοήθησε να πρασινίσει η Θέρμη Θεσσαλονίκης / Help green Thermi, Thessaloniki by adopting a tree',

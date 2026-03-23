@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import packageJson from '../../package.json';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 
@@ -9,8 +10,17 @@ export default function Footer() {
     <footer className="bg-gray-50 border-t border-gray-200 mt-auto">
       <div className="container mx-auto px-4 py-6">
         <div className="relative flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-gray-600">
-          <div className="sm:absolute sm:left-1/2 sm:-translate-x-1/2 text-center text-gray-500 text-xs sm:text-sm">
-            {t.footerCredit}
+          <div className="sm:absolute sm:left-1/2 sm:-translate-x-1/2 flex flex-col items-center gap-1">
+            <a href="https://epi-thermi.gr/" target="_blank" rel="noopener noreferrer">
+              <Image
+                src="/images/epi-header-logo.png"
+                alt="Σύλλογος ΕΠΙ"
+                width={80}
+                height={40}
+                className="h-auto w-auto max-h-10 object-contain"
+              />
+            </a>
+            <span className="text-gray-500 text-xs sm:text-sm">{t.footerCredit}</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="font-semibold">Version {packageJson.version}</span>

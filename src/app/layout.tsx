@@ -18,11 +18,13 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'el_GR',
     alternateLocale: 'en_US',
+    images: [{ url: '/og-image.png', width: 1200, height: 630 }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Υιοθέτησε ένα Δέντρο - Θέρμη | Adopt a Tree',
     description: 'Βοήθησε να πρασινίσει η Θέρμη Θεσσαλονίκης / Help green Thermi, Thessaloniki by adopting a tree',
+    images: ['/og-image.png'],
   },
 }
 

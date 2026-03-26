@@ -1,6 +1,6 @@
 # Adopt a Tree - Thermi, Thessaloniki
 
-**Current Version: 1.0.3** | [mytree.epi-thermi.gr](https://mytree.epi-thermi.gr)
+**Current Version: 1.0.4** | [mytree.epi-thermi.gr](https://mytree.epi-thermi.gr)
 
 A community engagement platform enabling residents of Thermi, Thessaloniki to adopt and care for trees via an interactive map.
 

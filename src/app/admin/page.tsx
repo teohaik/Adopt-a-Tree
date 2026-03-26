@@ -236,8 +236,8 @@ export default function AdminPage() {
   }
 
   return (
-    <main className="min-h-screen p-8 bg-gray-50">
-      <div className="max-w-[1600px] mx-auto">
+    <main className="min-h-screen p-4 bg-gray-50">
+      <div className="w-full">
         <div className="flex justify-between items-center mb-8">
           <div>
             <h1 className="text-4xl font-bold mb-2">Πίνακας Διαχείρισης</h1>
@@ -352,31 +352,31 @@ export default function AdminPage() {
             <table className="w-full">
               <thead className="bg-gray-100">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     ID
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Ετικέτα Δέντρου
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Υιοθέτης
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Email
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Ζώνη
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Είδος Δέντρου
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Κατάσταση
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Δημιουργήθηκε
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Ενέργειες
                   </th>
                 </tr>
@@ -384,22 +384,22 @@ export default function AdminPage() {
               <tbody className="bg-white divide-y divide-gray-200">
                 {displayedPins.map((pin) => (
                   <tr key={pin.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                       {pin.id}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
                       {pin.tree_label}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900">
                       {pin.user_name}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
                       {pin.user_email}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
                       {pin.zone_name || '—'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <td className="px-3 py-2 whitespace-nowrap text-sm">
                       <select
                         value={pin.tree_type_id || ''}
                         onChange={(e) => handleTreeTypeChange(pin.id, e.target.value)}
@@ -411,7 +411,7 @@ export default function AdminPage() {
                         ))}
                       </select>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <td className="px-3 py-2 whitespace-nowrap text-sm">
                       <label className="flex items-center gap-2 cursor-pointer">
                         <input
                           type="checkbox"
@@ -424,10 +424,10 @@ export default function AdminPage() {
                         </span>
                       </label>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
                       {new Date(pin.created_at).toLocaleDateString('el-GR')}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <td className="px-3 py-2 whitespace-nowrap text-sm">
                       <div className="flex items-center gap-3">
                         <a
                           href={`https://www.google.com/maps?q=${pin.latitude},${pin.longitude}`}
@@ -487,20 +487,20 @@ export default function AdminPage() {
                     <table className="w-full">
                       <thead className="bg-gray-50">
                         <tr>
-                          <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ετικέτα</th>
-                          <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase">Είδος</th>
-                          <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase">Κατάσταση</th>
-                          <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase">Υιοθέτης</th>
-                          <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                          <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ημερομηνία</th>
-                          <th className="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ενέργειες</th>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ετικέτα</th>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Είδος</th>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Κατάσταση</th>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Υιοθέτης</th>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ημερομηνία</th>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ενέργειες</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-100">
                         {zonePins.map((pin) => (
                           <tr key={pin.id} className="hover:bg-gray-50">
-                            <td className="px-6 py-3 text-sm font-medium text-gray-900">{pin.tree_label}</td>
-                            <td className="px-6 py-3 text-sm">
+                            <td className="px-3 py-2 text-sm font-medium text-gray-900">{pin.tree_label}</td>
+                            <td className="px-3 py-2 text-sm">
                               <select
                                 value={pin.tree_type_id || ''}
                                 onChange={(e) => handleTreeTypeChange(pin.id, e.target.value)}
@@ -512,7 +512,7 @@ export default function AdminPage() {
                                 ))}
                               </select>
                             </td>
-                            <td className="px-6 py-3 text-sm">
+                            <td className="px-3 py-2 text-sm">
                               <label className="flex items-center gap-2 cursor-pointer">
                                 <input
                                   type="checkbox"
@@ -525,12 +525,12 @@ export default function AdminPage() {
                                 </span>
                               </label>
                             </td>
-                            <td className="px-6 py-3 text-sm text-gray-900">{pin.user_name}</td>
-                            <td className="px-6 py-3 text-sm text-gray-500">{pin.user_email}</td>
-                            <td className="px-6 py-3 text-sm text-gray-500">
+                            <td className="px-3 py-2 text-sm text-gray-900">{pin.user_name}</td>
+                            <td className="px-3 py-2 text-sm text-gray-500">{pin.user_email}</td>
+                            <td className="px-3 py-2 text-sm text-gray-500">
                               {new Date(pin.created_at).toLocaleDateString('el-GR')}
                             </td>
-                            <td className="px-6 py-3 text-sm">
+                            <td className="px-3 py-2 text-sm">
                               <div className="flex items-center gap-3">
                                 <a
                                   href={`https://www.google.com/maps?q=${pin.latitude},${pin.longitude}`}
@@ -577,27 +577,27 @@ export default function AdminPage() {
                 <table className="w-full">
                   <thead className="bg-gray-100">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Χρήστης</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Περιγραφή</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Συντεταγμένες</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Κατάσταση</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ημερομηνία</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ενέργειες</th>
+                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Χρήστης</th>
+                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Περιγραφή</th>
+                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Συντεταγμένες</th>
+                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Κατάσταση</th>
+                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ημερομηνία</th>
+                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ενέργειες</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {suggestions.map(s => (
                       <tr key={s.id} className={`hover:bg-gray-50 ${s.status === 'reviewed' ? 'opacity-60' : ''}`}>
-                        <td className="px-6 py-4 text-sm text-gray-900">{s.id}</td>
-                        <td className="px-6 py-4 text-sm text-gray-900">{s.user_name}</td>
-                        <td className="px-6 py-4 text-sm text-gray-500">{s.user_email}</td>
-                        <td className="px-6 py-4 text-sm text-gray-700 max-w-xs">{s.description || '—'}</td>
-                        <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
+                        <td className="px-3 py-2 text-sm text-gray-900">{s.id}</td>
+                        <td className="px-3 py-2 text-sm text-gray-900">{s.user_name}</td>
+                        <td className="px-3 py-2 text-sm text-gray-500">{s.user_email}</td>
+                        <td className="px-3 py-2 text-sm text-gray-700 max-w-xs">{s.description || '—'}</td>
+                        <td className="px-3 py-2 text-sm text-gray-500 whitespace-nowrap">
                           {parseFloat(String(s.latitude)).toFixed(5)}, {parseFloat(String(s.longitude)).toFixed(5)}
                         </td>
-                        <td className="px-6 py-4 text-sm whitespace-nowrap">
+                        <td className="px-3 py-2 text-sm whitespace-nowrap">
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                             s.status === 'pending'
                               ? 'bg-yellow-100 text-yellow-800'
@@ -606,10 +606,10 @@ export default function AdminPage() {
                             {s.status === 'pending' ? '⏳ Εκκρεμεί' : '✅ Εξετάστηκε'}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
+                        <td className="px-3 py-2 text-sm text-gray-500 whitespace-nowrap">
                           {new Date(s.created_at).toLocaleDateString('el-GR')}
                         </td>
-                        <td className="px-6 py-4 text-sm whitespace-nowrap">
+                        <td className="px-3 py-2 text-sm whitespace-nowrap">
                           <div className="flex items-center gap-3">
                             <a
                               href={`https://www.google.com/maps?q=${s.latitude},${s.longitude}`}

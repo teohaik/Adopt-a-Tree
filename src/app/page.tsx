@@ -74,7 +74,7 @@ export default function Home() {
     setPlacementMode(false);
   };
 
-  const handleFormSubmit = async (data: { name: string; email: string; label: string; treeExists: boolean }) => {
+  const handleFormSubmit = async (data: { name: string; email: string; phone: string; label: string; treeExists: boolean }) => {
     if (!selectedLocation) return;
 
     try {
@@ -88,6 +88,7 @@ export default function Home() {
           longitude: selectedLocation.lng,
           name: data.name,
           email: data.email,
+          phone: data.phone,
           label: data.label,
           lang: language,
           treeExists: data.treeExists,

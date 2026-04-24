@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
     await initDatabase();
 
     const body = await request.json();
-    const { latitude, longitude, name, email, label, lang: rawLang, treeExists } = body;
+    const { latitude, longitude, name, email, phone, label, lang: rawLang, treeExists } = body;
     const lang: Language = rawLang === 'en' ? 'en' : 'el';
     const t = translations[lang];
 
@@ -53,7 +53,8 @@ export async function POST(request: NextRequest) {
       email,
       label,
       zone?.id,
-      treeExists !== false
+      treeExists !== false,
+      phone || undefined
     );
 
     // Send confirmation email

@@ -36,6 +36,8 @@ export interface Translations {
   yourNameLabel: string;
   namePlaceholder: string;
   yourEmailLabel: string;
+  yourPhoneLabel: string;
+  phonePlaceholder: string;
   treeLabelLabel: string;
   treeLabelPlaceholder: string;
   treeExistsLabel: string;
@@ -190,6 +192,8 @@ export const translations: Record<Language, Translations> = {
     yourNameLabel: 'Το Όνομά Σου',
     namePlaceholder: 'π.χ. Γιάννης Παπαδόπουλος',
     yourEmailLabel: 'Το Email Σου',
+    yourPhoneLabel: 'Τηλέφωνο Επικοινωνίας',
+    phonePlaceholder: 'π.χ. 6912345678',
     treeLabelLabel: 'Ετικέτα δέντρου',
     treeLabelPlaceholder: 'π.χ. Δρυς κοντά στο πάρκο',
     treeExistsLabel: 'Ύπαρξη δέντρου',
@@ -343,6 +347,8 @@ export const translations: Record<Language, Translations> = {
     yourNameLabel: 'Your Name',
     namePlaceholder: 'e.g. John Smith',
     yourEmailLabel: 'Your Email',
+    yourPhoneLabel: 'Phone Number',
+    phonePlaceholder: 'e.g. 6912345678',
     treeLabelLabel: 'Tree Label',
     treeLabelPlaceholder: 'e.g. Oak near the park',
     treeExistsLabel: 'Tree Status',

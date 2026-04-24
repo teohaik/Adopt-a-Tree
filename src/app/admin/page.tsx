@@ -8,6 +8,7 @@ interface TreePin {
   longitude: number;
   user_name: string;
   user_email: string;
+  user_phone: string | null;
   tree_label: string;
   zone_id: number | null;
   zone_name: string | null;
@@ -151,7 +152,7 @@ export default function AdminPage() {
   };
 
   const exportToCSV = () => {
-    const headers = ['ID', 'Ετικέτα Δέντρου', 'Είδος Δέντρου', 'Κατάσταση', 'Όνομα Χρήστη', 'Email Χρήστη', 'Ζώνη', 'Γεωγραφικό Πλάτος', 'Γεωγραφικό Μήκος', 'Ημερομηνία Δημιουργίας'];
+    const headers = ['ID', 'Ετικέτα Δέντρου', 'Είδος Δέντρου', 'Κατάσταση', 'Όνομα Χρήστη', 'Email Χρήστη', 'Τηλέφωνο', 'Ζώνη', 'Γεωγραφικό Πλάτος', 'Γεωγραφικό Μήκος', 'Ημερομηνία Δημιουργίας'];
     const csvData = displayedPins.map(pin => [
       pin.id,
       pin.tree_label,
@@ -159,6 +160,7 @@ export default function AdminPage() {
       pin.tree_exists ? 'Υπάρχει ήδη' : 'Προς φύτευση',
       pin.user_name,
       pin.user_email,
+      pin.user_phone || '',
       pin.zone_name || '',
       pin.latitude,
       pin.longitude,
@@ -365,6 +367,9 @@ export default function AdminPage() {
                     Email
                   </th>
                   <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Τηλέφωνο
+                  </th>
+                  <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Ζώνη
                   </th>
                   <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -395,6 +400,9 @@ export default function AdminPage() {
                     </td>
                     <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
                       {pin.user_email}
+                    </td>
+                    <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
+                      {pin.user_phone || '—'}
                     </td>
                     <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">
                       {pin.zone_name || '—'}
@@ -492,6 +500,7 @@ export default function AdminPage() {
                           <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Κατάσταση</th>
                           <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Υιοθέτης</th>
                           <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                          <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Τηλέφωνο</th>
                           <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ημερομηνία</th>
                           <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ενέργειες</th>
                         </tr>
@@ -527,6 +536,7 @@ export default function AdminPage() {
                             </td>
                             <td className="px-3 py-2 text-sm text-gray-900">{pin.user_name}</td>
                             <td className="px-3 py-2 text-sm text-gray-500">{pin.user_email}</td>
+                            <td className="px-3 py-2 text-sm text-gray-500">{pin.user_phone || '—'}</td>
                             <td className="px-3 py-2 text-sm text-gray-500">
                               {new Date(pin.created_at).toLocaleDateString('el-GR')}
                             </td>

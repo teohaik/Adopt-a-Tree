@@ -95,6 +95,16 @@ export async function initDatabase() {
     // Column might already exist, ignore error
   }
 
+  // Add user_phone column to tree_pins if it doesn't exist
+  try {
+    await sql`
+      ALTER TABLE tree_pins
+      ADD COLUMN IF NOT EXISTS user_phone VARCHAR(50)
+    `;
+  } catch (error) {
+    // Column might already exist, ignore error
+  }
+
   // Zone suggestions table
   await sql`
     CREATE TABLE IF NOT EXISTS zone_suggestions (
@@ -116,6 +126,7 @@ export interface TreePin {
   longitude: number;
   user_name: string;
   user_email: string;
+  user_phone: string | null;
   tree_label: string;
   zone_id: number | null;
   zone_name: string | null;
@@ -140,11 +151,12 @@ export async function createTreePin(
   userEmail: string,
   treeLabel: string,
   zoneId?: number | null,
-  treeExists: boolean = true
+  treeExists: boolean = true,
+  userPhone?: string
 ): Promise<TreePin> {
   const result = await sql`
-    INSERT INTO tree_pins (latitude, longitude, user_name, user_email, tree_label, zone_id, tree_exists)
-    VALUES (${latitude}, ${longitude}, ${userName}, ${userEmail}, ${treeLabel}, ${zoneId || null}, ${treeExists})
+    INSERT INTO tree_pins (latitude, longitude, user_name, user_email, tree_label, zone_id, tree_exists, user_phone)
+    VALUES (${latitude}, ${longitude}, ${userName}, ${userEmail}, ${treeLabel}, ${zoneId || null}, ${treeExists}, ${userPhone || null})
     RETURNING *
   `;
   return result.rows[0] as TreePin;

@@ -1,6 +1,6 @@
 # Adopt a Tree - Thermi, Thessaloniki
 
-**Current Version: 1.0.4** | [mytree.epi-thermi.gr](https://mytree.epi-thermi.gr)
+**Current Version: 1.0.5** | [mytree.epi-thermi.gr](https://mytree.epi-thermi.gr)
 
 A community engagement platform enabling residents of Thermi, Thessaloniki to adopt and care for trees via an interactive map.
 
@@ -23,6 +23,7 @@ Adopt a Tree allows residents to:
 - **Tree Exists Toggle**: Declare whether the tree already exists or needs to be planted
 - **Tree Types**: Select from pre-seeded Greek tree species
 - **Email Filter**: View your own adopted trees highlighted on the map
+- **Phone Number**: Required at adoption so the green office can follow up by phone
 - **Email Confirmation**: Automatic bilingual confirmation on adoption
 - **Bilingual UI**: Greek/English toggle with browser language detection
 - **Watering Guide**: `/guide` page with care instructions
@@ -34,6 +35,7 @@ Adopt a Tree allows residents to:
 - **Tree Type Assignment**: Assign species per tree row
 - **Zone Management**: Draw planting zones on map with polygon tool
 - **Tree Type Management**: Full CRUD for tree species
+- **Phone Numbers**: Visible per row in all admin views and included in CSV export
 - **CSV Export**: Download adoption data for planning
 - **Secure Auth**: HMAC-SHA256 session tokens, 7-day HTTP-only cookie
 
@@ -78,7 +80,7 @@ src/
 
 ## Database Tables
 
-- `tree_pins` — id, latitude, longitude, user_name, user_email, tree_label, zone_id, tree_type_id, tree_exists, created_at
+- `tree_pins` — id, latitude, longitude, user_name, user_email, user_phone, tree_label, zone_id, tree_type_id, tree_exists, created_at
 - `planting_zones` — id, name, description, coordinates (JSONB), enabled, nearest_roads, created_at
 - `tree_types` — id, name, description, created_at
 
@@ -107,7 +109,7 @@ src/
 
 1. Click **"Πρόσθεσε Δέντρο"** to enter placement mode
 2. Click on the map within a valid planting zone
-3. Fill in your name, email, tree label, type, and whether the tree exists
+3. Fill in your name, email, phone number, tree label, and whether the tree exists
 4. Submit — you'll receive a confirmation email
 
 ### Admin Access

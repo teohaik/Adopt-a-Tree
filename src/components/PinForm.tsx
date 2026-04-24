@@ -6,13 +6,14 @@ import { useLanguage } from '@/lib/i18n/LanguageContext';
 interface PinFormProps {
   latitude: number;
   longitude: number;
-  onSubmit: (data: { name: string; email: string; label: string; treeExists: boolean }) => void;
+  onSubmit: (data: { name: string; email: string; phone: string; label: string; treeExists: boolean }) => void;
   onCancel: () => void;
 }
 
 export default function PinForm({ latitude, longitude, onSubmit, onCancel }: PinFormProps) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [label, setLabel] = useState('');
   const [treeExists, setTreeExists] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -21,7 +22,7 @@ export default function PinForm({ latitude, longitude, onSubmit, onCancel }: Pin
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    await onSubmit({ name, email, label, treeExists });
+    await onSubmit({ name, email, phone, label, treeExists });
     setIsSubmitting(false);
   };
 
@@ -61,6 +62,21 @@ export default function PinForm({ latitude, longitude, onSubmit, onCancel }: Pin
               required
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
               placeholder="email@example.com"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+              {t.yourPhoneLabel}
+            </label>
+            <input
+              type="tel"
+              id="phone"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              placeholder={t.phonePlaceholder}
             />
           </div>
 

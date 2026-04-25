@@ -148,6 +148,12 @@ export interface Translations {
   emailFooter: string;
   emailFooterContact: string;
 
+  // Zone approval email
+  emailZoneApprovalSubject: string;
+  emailZoneApprovalTitle: string;
+  emailZoneApprovalBody: string;
+  emailZoneApprovalCTA: string;
+
   // Rejection email
   emailRejectionSubject: (label: string) => string;
   emailRejectionTitle: string;
@@ -311,6 +317,12 @@ export const translations: Record<Language, Translations> = {
     emailFooter: 'Αυτό είναι ένα αυτόματο μήνυμα από το Υιοθέτησε ένα Δέντρο',
     emailFooterContact: 'Για οποιαδήποτε ερώτηση, επικοινώνησε μαζί μας.',
 
+    // Zone approval email
+    emailZoneApprovalSubject: '✅ Η πρότασή σας για νέα ζώνη εγκρίθηκε!',
+    emailZoneApprovalTitle: '✅ Η πρότασή σας εγκρίθηκε!',
+    emailZoneApprovalBody: 'Χαρούμενοι σας ανακοινώνουμε ότι η πρότασή σας για νέα ζώνη φύτευσης εγκρίθηκε από τον Δήμο Θέρμης. Μπορείτε τώρα να επισκεφθείτε τον χάρτη και να υιοθετήσετε ένα δέντρο στην περιοχή αυτή!',
+    emailZoneApprovalCTA: 'Υιοθέτησε ένα Δέντρο τώρα',
+
     // Rejection email
     emailRejectionSubject: (label: string) => `Σχετικά με την υιοθεσία: ${label}`,
     emailRejectionTitle: '❌ Αίτημα Υιοθεσίας Δέντρου',
@@ -472,6 +484,12 @@ export const translations: Record<Language, Translations> = {
     emailThankYou: 'Thank you for contributing to a greener Thermi, Thessaloniki!',
     emailFooter: 'This is an automated message from Adopt a Tree',
     emailFooterContact: 'For any questions, please contact us.',
+
+    // Zone approval email
+    emailZoneApprovalSubject: '✅ Your zone suggestion has been approved!',
+    emailZoneApprovalTitle: '✅ Your suggestion was approved!',
+    emailZoneApprovalBody: 'We are happy to inform you that your planting zone suggestion has been approved by the Municipality of Thermi. You can now visit the map and adopt a tree in that area!',
+    emailZoneApprovalCTA: 'Adopt a Tree now',
 
     // Rejection email
     emailRejectionSubject: (label: string) => `Regarding your adoption: ${label}`,

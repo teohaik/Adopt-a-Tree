@@ -382,6 +382,13 @@ export async function deleteZoneSuggestion(id: number): Promise<void> {
   `;
 }
 
+export async function getZoneSuggestionById(id: number): Promise<ZoneSuggestion | null> {
+  const result = await sql`
+    SELECT * FROM zone_suggestions WHERE id = ${id}
+  `;
+  return (result.rows[0] as ZoneSuggestion) ?? null;
+}
+
 export async function updateZoneSuggestionStatus(id: number, status: 'pending' | 'reviewed'): Promise<void> {
   await sql`
     UPDATE zone_suggestions SET status = ${status} WHERE id = ${id}

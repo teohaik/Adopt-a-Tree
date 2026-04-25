@@ -1,6 +1,6 @@
 # Adopt a Tree - Thermi, Thessaloniki
 
-**Current Version: 1.0.6** | [mytree.epi-thermi.gr](https://mytree.epi-thermi.gr)
+**Current Version: 1.0.7** | [mytree.epi-thermi.gr](https://mytree.epi-thermi.gr)
 
 A community engagement platform enabling residents of Thermi, Thessaloniki to adopt and care for trees via an interactive map.
 
@@ -104,6 +104,7 @@ src/
 | `EMAIL_FROM` | Sender email address |
 | `ADMIN_PASSWORD` | Admin dashboard password |
 | `AUTH_SECRET` | HMAC secret for session tokens |
+| `ADMIN_EMAIL` | Admin email address for CC on zone approval emails (optional) |
 
 ## Usage
 

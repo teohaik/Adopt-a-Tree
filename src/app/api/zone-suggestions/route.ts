@@ -3,10 +3,12 @@ import {
   initDatabase,
   createZoneSuggestion,
   getAllZoneSuggestions,
+  getZoneSuggestionById,
   deleteZoneSuggestion,
   updateZoneSuggestionStatus,
 } from '@/lib/db';
 import { verifyApiAuth } from '@/lib/apiAuth';
+import { sendZoneApprovalEmail } from '@/lib/email';
 
 export async function GET(request: NextRequest) {
   const isAdmin = await verifyApiAuth(request);
@@ -56,9 +58,27 @@ export async function PATCH(request: NextRequest) {
     if (!id || !status) {
       return NextResponse.json({ error: 'Missing id or status' }, { status: 400 });
     }
+
+    const suggestion = await getZoneSuggestionById(parseInt(id, 10));
+    if (!suggestion) {
+      return NextResponse.json({ error: 'Suggestion not found' }, { status: 404 });
+    }
+
     await updateZoneSuggestionStatus(id, status);
+
+    if (status === 'reviewed' && suggestion.status === 'pending') {
+      await sendZoneApprovalEmail(
+        suggestion.user_email,
+        suggestion.user_name,
+        Number(suggestion.latitude),
+        Number(suggestion.longitude),
+        suggestion.description
+      );
+    }
+
     return NextResponse.json({ success: true });
   } catch (error) {
+    console.error('Failed to update suggestion:', error);
     return NextResponse.json({ error: 'Failed to update suggestion' }, { status: 500 });
   }
 }

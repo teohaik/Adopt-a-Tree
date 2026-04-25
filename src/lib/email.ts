@@ -124,6 +124,74 @@ export async function sendConfirmationEmail(
   }
 }
 
+export async function sendZoneApprovalEmail(
+  userEmail: string,
+  userName: string,
+  latitude: number,
+  longitude: number,
+  description: string | null,
+  lang: Language = 'el'
+) {
+  const t = translations[lang];
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const mapUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
+  const adminEmail = process.env.ADMIN_EMAIL;
+
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background-color: #16a34a; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+          .content { background-color: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; }
+          .info-box { background-color: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #16a34a; }
+          .button { display: inline-block; background-color: #16a34a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 10px 5px; }
+          .footer { text-align: center; color: #6b7280; font-size: 14px; margin-top: 30px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>${t.emailZoneApprovalTitle}</h1>
+          </div>
+          <div class="content">
+            <p>${t.emailGreeting(userName)}</p>
+            <p>${t.emailZoneApprovalBody}</p>
+            <div class="info-box">
+              ${description ? `<p><strong>Περιγραφή:</strong> ${description}</p>` : ''}
+              <p><strong>Τοποθεσία:</strong> ${latitude.toFixed(6)}, ${longitude.toFixed(6)}</p>
+            </div>
+            <p style="text-align: center;">
+              <a href="${appUrl}" class="button">${t.emailZoneApprovalCTA}</a>
+              <a href="${mapUrl}" class="button">${t.emailViewMaps}</a>
+            </p>
+            <div class="footer">
+              <p>${t.emailFooter}</p>
+              <p>${t.emailFooterContact}</p>
+            </div>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+
+  try {
+    await resend.emails.send({
+      from: process.env.EMAIL_FROM || `${t.emailFromName} <onboarding@resend.dev>`,
+      to: userEmail,
+      ...(adminEmail ? { cc: [adminEmail] } : {}),
+      subject: t.emailZoneApprovalSubject,
+      html: htmlContent,
+    });
+  } catch (error) {
+    console.error('Failed to send zone approval email:', error);
+    throw error;
+  }
+}
+
 export async function sendRejectionEmail(
   userEmail: string,
   userName: string,

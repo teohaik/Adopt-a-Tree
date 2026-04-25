@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createTreePin, getAllTreePins, deleteTreePin, updateTreePinType, updateTreePinExists, initDatabase, getEnabledPlantingZones } from '@/lib/db';
+import { createTreePin, getAllTreePins, deleteTreePin, updateTreePinType, updateTreePinExists, updateTreePinLocation, initDatabase, getEnabledPlantingZones } from '@/lib/db';
 import { verifyApiAuth } from '@/lib/apiAuth';
 import { sendConfirmationEmail } from '@/lib/email';
 import { isPointInPlantingZone, getZoneForPoint } from '@/lib/plantingZones';
@@ -103,13 +103,15 @@ export async function PATCH(request: NextRequest) {
   try {
     await initDatabase();
     const body = await request.json();
-    const { id, tree_type_id, tree_exists } = body;
+    const { id, tree_type_id, tree_exists, latitude, longitude } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'Missing pin ID' }, { status: 400 });
     }
 
-    if (tree_exists !== undefined) {
+    if (latitude !== undefined && longitude !== undefined) {
+      await updateTreePinLocation(id, parseFloat(latitude), parseFloat(longitude));
+    } else if (tree_exists !== undefined) {
       await updateTreePinExists(id, Boolean(tree_exists));
     } else {
       await updateTreePinType(id, tree_type_id || null);

@@ -123,3 +123,62 @@ export async function sendConfirmationEmail(
     throw error;
   }
 }
+
+export async function sendRejectionEmail(
+  userEmail: string,
+  userName: string,
+  treeLabel: string,
+  reason: string,
+  lang: Language = 'el'
+) {
+  const t = translations[lang];
+
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background-color: #dc2626; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+          .content { background-color: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; }
+          .reason-box { background-color: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #dc2626; }
+          .footer { text-align: center; color: #6b7280; font-size: 14px; margin-top: 30px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>${t.emailRejectionTitle}</h1>
+          </div>
+          <div class="content">
+            <p>${t.emailGreeting(userName)}</p>
+            <p>${t.emailRejectionBody}</p>
+            <div class="reason-box">
+              <p><strong>${t.emailRejectionReasonTitle}</strong></p>
+              <p>${reason}</p>
+            </div>
+            <p>${t.emailRejectionClosing}</p>
+            <div class="footer">
+              <p>${t.emailFooter}</p>
+              <p>${t.emailFooterContact}</p>
+            </div>
+          </div>
+        </div>
+      </body>
+    </html>
+  `;
+
+  try {
+    await resend.emails.send({
+      from: process.env.EMAIL_FROM || `${t.emailFromName} <onboarding@resend.dev>`,
+      to: userEmail,
+      subject: t.emailRejectionSubject(treeLabel),
+      html: htmlContent,
+    });
+  } catch (error) {
+    console.error('Failed to send rejection email:', error);
+    throw error;
+  }
+}

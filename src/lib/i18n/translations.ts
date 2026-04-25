@@ -148,6 +148,13 @@ export interface Translations {
   emailFooter: string;
   emailFooterContact: string;
 
+  // Rejection email
+  emailRejectionSubject: (label: string) => string;
+  emailRejectionTitle: string;
+  emailRejectionBody: string;
+  emailRejectionReasonTitle: string;
+  emailRejectionClosing: string;
+
   // Footer
   footerCredit: string;
 
@@ -304,6 +311,13 @@ export const translations: Record<Language, Translations> = {
     emailFooter: 'Αυτό είναι ένα αυτόματο μήνυμα από το Υιοθέτησε ένα Δέντρο',
     emailFooterContact: 'Για οποιαδήποτε ερώτηση, επικοινώνησε μαζί μας.',
 
+    // Rejection email
+    emailRejectionSubject: (label: string) => `Σχετικά με την υιοθεσία: ${label}`,
+    emailRejectionTitle: '❌ Αίτημα Υιοθεσίας Δέντρου',
+    emailRejectionBody: 'Λυπούμαστε να σας ενημερώσουμε ότι η αίτηση υιοθεσίας δέντρου δεν μπόρεσε να εγκριθεί.',
+    emailRejectionReasonTitle: 'Αιτία απόρριψης:',
+    emailRejectionClosing: 'Εάν έχετε ερωτήσεις ή θέλετε να προτείνετε άλλη τοποθεσία, παρακαλούμε επικοινωνήστε μαζί μας.',
+
     // Footer
     footerCredit: 'Ιδέα και υλοποίηση: Σύλλογος ΕΠΙ',
 
@@ -458,6 +472,13 @@ export const translations: Record<Language, Translations> = {
     emailThankYou: 'Thank you for contributing to a greener Thermi, Thessaloniki!',
     emailFooter: 'This is an automated message from Adopt a Tree',
     emailFooterContact: 'For any questions, please contact us.',
+
+    // Rejection email
+    emailRejectionSubject: (label: string) => `Regarding your adoption: ${label}`,
+    emailRejectionTitle: '❌ Tree Adoption Request',
+    emailRejectionBody: 'We regret to inform you that your tree adoption request could not be approved.',
+    emailRejectionReasonTitle: 'Reason for rejection:',
+    emailRejectionClosing: 'If you have any questions or would like to suggest a different location, please contact us.',
 
     // Footer
     footerCredit: 'Concept & implementation: EPI Association',

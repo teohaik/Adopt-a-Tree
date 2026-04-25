@@ -325,6 +325,23 @@ export async function updateTreePinExists(pinId: number, treeExists: boolean): P
   `;
 }
 
+export async function getTreePinById(id: number): Promise<TreePin | null> {
+  const result = await sql`
+    SELECT tp.*, pz.name as zone_name, tt.name as tree_type_name
+    FROM tree_pins tp
+    LEFT JOIN planting_zones pz ON tp.zone_id = pz.id
+    LEFT JOIN tree_types tt ON tp.tree_type_id = tt.id
+    WHERE tp.id = ${id}
+  `;
+  return (result.rows[0] as TreePin) ?? null;
+}
+
+export async function updateTreePinLocation(pinId: number, latitude: number, longitude: number): Promise<void> {
+  await sql`
+    UPDATE tree_pins SET latitude = ${latitude}, longitude = ${longitude} WHERE id = ${pinId}
+  `;
+}
+
 // Zone Suggestions
 export interface ZoneSuggestion {
   id: number;

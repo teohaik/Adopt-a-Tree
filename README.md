@@ -1,6 +1,6 @@
 # Adopt a Tree - Thermi, Thessaloniki
 
-**Current Version: 1.0.5** | [mytree.epi-thermi.gr](https://mytree.epi-thermi.gr)
+**Current Version: 1.0.6** | [mytree.epi-thermi.gr](https://mytree.epi-thermi.gr)
 
 A community engagement platform enabling residents of Thermi, Thessaloniki to adopt and care for trees via an interactive map.
 
@@ -29,13 +29,15 @@ Adopt a Tree allows residents to:
 - **Watering Guide**: `/guide` page with care instructions
 
 ### Admin Features
-- **Dashboard**: List view, zone-grouped view, and zone suggestions tabs
+- **Master-Detail Dashboard**: Click any row to open a detail panel with full info and actions
 - **Statistics**: Total adoptions, unique adopters, recent activity
 - **Tree Exists Filter**: Filter "Προς Φύτευση" (to be planted) entries
-- **Tree Type Assignment**: Assign species per tree row
+- **Tree Type Assignment**: Assign species from the detail panel
+- **Move Pin**: Drag a tree to its correct map location from the detail panel
+- **Reject Adoption**: Reject with a reason — sends an email to the adopter automatically
+- **Phone Numbers**: Visible in master table and detail panel, included in CSV export
 - **Zone Management**: Draw planting zones on map with polygon tool
 - **Tree Type Management**: Full CRUD for tree species
-- **Phone Numbers**: Visible per row in all admin views and included in CSV export
 - **CSV Export**: Download adoption data for planning
 - **Secure Auth**: HMAC-SHA256 session tokens, 7-day HTTP-only cookie
 

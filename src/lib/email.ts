@@ -1,5 +1,7 @@
 import { Resend } from 'resend';
 import { translations, Language } from './i18n/translations';
+import { BroadcastLang, BroadcastRecipient, broadcastFromName, fillPlaceholders, renderBroadcastHtml } from './broadcast';
+import { buildUnsubscribeUrls } from './unsubscribe';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -248,5 +250,54 @@ export async function sendRejectionEmail(
   } catch (error) {
     console.error('Failed to send rejection email:', error);
     throw error;
+  }
+}
+
+export interface BroadcastContent {
+  el: { subject: string; body: string };
+  en: { subject: string; body: string };
+}
+
+export interface BroadcastSendResult {
+  email: string;
+  ok: boolean;
+  error?: string;
+}
+
+/** Sends one personalised email per recipient using Resend's batch API (max 100 per call). */
+export async function sendBroadcastBatch(
+  recipients: BroadcastRecipient[],
+  content: BroadcastContent
+): Promise<BroadcastSendResult[]> {
+  if (recipients.length > 100) throw new Error('Batch limited to 100 recipients');
+
+  const payload = await Promise.all(
+    recipients.map(async r => {
+      const lang: BroadcastLang = r.lang;
+      const { subject, body } = content[lang];
+      const urls = await buildUnsubscribeUrls(r.email);
+      return {
+        from: process.env.EMAIL_FROM || `${broadcastFromName(lang)} <onboarding@resend.dev>`,
+        to: r.email,
+        subject: fillPlaceholders(subject, r),
+        html: renderBroadcastHtml(lang, body, r, urls.page),
+        headers: {
+          'List-Unsubscribe': `<${urls.api}>`,
+          'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+        },
+      };
+    })
+  );
+
+  try {
+    const { error } = await resend.batch.send(payload);
+    if (error) {
+      console.error('Broadcast batch failed:', error);
+      return recipients.map(r => ({ email: r.email, ok: false, error: error.message }));
+    }
+    return recipients.map(r => ({ email: r.email, ok: true }));
+  } catch (error: any) {
+    console.error('Broadcast batch failed:', error);
+    return recipients.map(r => ({ email: r.email, ok: false, error: error?.message || 'Send failed' }));
   }
 }

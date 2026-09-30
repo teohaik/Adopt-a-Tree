@@ -18,17 +18,22 @@ src/
 │   ├── page.tsx                    # Main map interface
 │   ├── layout.tsx                  # Root layout with Footer & LanguageProvider
 │   ├── guide/page.tsx              # Watering guide (bilingual)
+│   ├── unsubscribe/page.tsx        # Public opt-out from broadcasts (confirm button, POSTs /api/unsubscribe)
 │   ├── opengraph-image.tsx         # OG image
 │   ├── api/
 │   │   ├── pins/route.ts           # Tree CRUD (GET/POST/PATCH/DELETE; PATCH: type, tree_exists, move location, contact details)
 │   │   ├── pins/reject/route.ts    # Reject adoption (emails adopter, deletes pin)
 │   │   ├── zone-suggestions/route.ts # User zone suggestions (GET/POST/PATCH/DELETE)
+│   │   ├── emails/send/route.ts    # Broadcast send (admin): resolves emails server-side from pin IDs, max 100 recipients/call, batch via Resend; test mode -> ADMIN_EMAIL
+│   │   ├── emails/history|optouts  # Broadcast log / opted-out emails (admin)
+│   │   ├── unsubscribe/route.ts    # Public: GET redirects to page, POST opts out (HMAC token, also List-Unsubscribe one-click)
 │   │   ├── zones/route.ts          # Planting zone CRUD
 │   │   ├── zones/update-roads/route.ts
 │   │   ├── tree-types/route.ts     # Tree type CRUD (admin)
 │   │   └── auth/login|logout       # Session management
 │   └── admin/
 │       ├── page.tsx                # Master-detail dashboard (list + zone-grouped views, zone suggestions)
+│       ├── emails/page.tsx         # Mass emailer: recipients, EL/EN composer, preview, test, send, history
 │       ├── zones/page.tsx          # Zone management with map drawing
 │       ├── tree-types/page.tsx     # Tree species management
 │       └── login/page.tsx
@@ -44,7 +49,9 @@ src/
     ├── db.ts                       # Database operations
     ├── auth.ts                     # Admin auth (HMAC-SHA256)
     ├── apiAuth.ts                  # API auth verification
-    ├── email.ts                    # Resend emails: confirmation, zone approval, rejection
+    ├── email.ts                    # Resend emails: confirmation, zone approval, rejection, sendBroadcastBatch
+    ├── broadcast.ts                # Pure: groupRecipients (1 per email), placeholders, escaped HTML template
+    ├── unsubscribe.ts              # HMAC (SESSION_SECRET) unsubscribe tokens + URLs
     ├── plantingZones.ts            # Ray-casting geospatial validation
     ├── nearestRoads.ts             # Geocoding utilities
     └── i18n/
@@ -67,13 +74,16 @@ src/
 12. Required phone number on adoption (`user_phone`), shown in admin and CSV export
 13. Master-detail admin: click a row for detail panel; move pin on map; reject adoption with reason (emails adopter, deletes pin); edit adopter name/email/phone
 14. Admin list table: email column, header checkbox filters ("Προς φύτευση", "Χωρίς τηλέφωνο"), row checkboxes, "Αντιγραφή CSV" copies checked (or all visible) rows; CSV export respects filters
-15. Zone suggestions: users suggest new planting locations; admin reviews, which sends an approval email (CC `ADMIN_EMAIL`, optional)
+15. Mass emailer: recipients from table selection / all / filters, one email per adopter, per-language (EL/EN) text with {name} {tree_count} {tree_labels}, required test send, unsubscribe link + List-Unsubscribe header
+16. Zone suggestions: users suggest new planting locations; admin reviews, which sends an approval email (CC `ADMIN_EMAIL`, optional)
 
 ## Database Tables
-- `tree_pins` — id, latitude, longitude, user_name, user_email, user_phone, tree_label, zone_id (FK), tree_type_id (FK), tree_exists (boolean, default true), created_at
+- `tree_pins` — id, latitude, longitude, user_name, user_email, user_phone, tree_label, zone_id (FK), tree_type_id (FK), tree_exists (boolean, default true), lang ('el'|'en', default 'el'), created_at
 - `planting_zones` — id, name, description, coordinates (JSONB), enabled, nearest_roads, created_at
 - `tree_types` — id, name, description, created_at
 - `zone_suggestions` — id, latitude, longitude, user_name, user_email, description, status ('pending'|'reviewed'), created_at
+- `email_optouts` — email (PK, lowercase), created_at (broadcasts only; transactional emails ignore it)
+- `email_broadcasts` — id, subject_el, subject_en, recipient_count, sent_count, failed_count, created_at
 
 ## DB Migrations Pattern
 `initDatabase()` in `db.ts` runs `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` for each new column — safe to re-run on every cold start.
@@ -82,11 +92,11 @@ src/
 Thermi: 40.5463°N, 23.0176°E
 
 ## Current Version
-1.0.9
+1.1.0
 
 ## Recent Commits
-- (1.0.9): Admin can edit adopter name/email/phone in detail panel; fix "Στοιχεία Αναδόχου" heading
+- (1.1.0): Mass emailer at /admin/emails, per-adopter language, unsubscribe flow
+- dd4e456: Admin can edit adopter name/email/phone in detail panel; fix "Στοιχεία Αναδόχου" heading
 - 103d9fd: Admin table: email column, header checkbox filters (to plant, no phone), row selection + copy as CSV
 - c404f5f: Update CLAUDE.md and README to reflect v1.0.7 features
 - dac9726: Bump version to 1.0.7, send approval email on zone suggestion review
-- 674a29b: Bump version to 1.0.6, master-detail admin, move pin, reject adoption

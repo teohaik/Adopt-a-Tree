@@ -17,6 +17,7 @@ interface TreePin {
   tree_type_id: number | null;
   tree_type_name: string | null;
   tree_exists: boolean;
+  lang: 'el' | 'en' | null;
   created_at: string;
 }
 
@@ -143,18 +144,18 @@ export default function AdminPage() {
     setPins(prev => prev.map(p => p.id === pinId ? { ...p, latitude: lat, longitude: lng } : p));
   };
 
-  const handleContactUpdate = async (pinId: number, name: string, email: string, phone: string) => {
+  const handleContactUpdate = async (pinId: number, name: string, email: string, phone: string, lang: 'el' | 'en') => {
     const response = await fetch('/api/pins', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: pinId, user_name: name, user_email: email, user_phone: phone }),
+      body: JSON.stringify({ id: pinId, user_name: name, user_email: email, user_phone: phone, lang }),
     });
     if (!response.ok) {
       const data = await response.json().catch(() => ({}));
       throw new Error(data.error || 'Failed to update contact details');
     }
     setPins(prev => prev.map(p => p.id === pinId
-      ? { ...p, user_name: name, user_email: email, user_phone: phone || null }
+      ? { ...p, user_name: name, user_email: email, user_phone: phone || null, lang }
       : p));
   };
 
@@ -243,6 +244,16 @@ export default function AdminPage() {
     }
   };
 
+  const emailSelected = () => {
+    try {
+      sessionStorage.setItem('emailer:pinIds', JSON.stringify(checkedRows.map(p => p.id)));
+    } catch {
+      alert('Αδυναμία μεταφοράς της επιλογής');
+      return;
+    }
+    window.location.href = '/admin/emails';
+  };
+
   const toggleChecked = (id: number) => {
     setCheckedIds(prev => {
       const next = new Set(prev);
@@ -310,6 +321,9 @@ export default function AdminPage() {
             </Link>
             <Link href="/" className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm">
               Πίσω στο Χάρτη
+            </Link>
+            <Link href="/admin/emails" className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 text-sm">
+              ✉️ Μαζική Αποστολή
             </Link>
             <Link href="/admin/tree-types" className="px-4 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700 text-sm">
               Είδη Δέντρων
@@ -433,7 +447,15 @@ export default function AdminPage() {
                               🌱 Προς φύτευση ({toPlantCount})
                             </label>
                           </th>
-                          <th className="px-3 pb-2 text-right">
+                          <th className="px-3 pb-2 text-right whitespace-nowrap">
+                            <button
+                              onClick={emailSelected}
+                              disabled={checkedRows.length === 0}
+                              title="Αποστολή email στους επιλεγμένους"
+                              className="mr-2 px-2.5 py-1 bg-purple-600 text-white rounded text-xs font-normal normal-case hover:bg-purple-700 disabled:bg-gray-300"
+                            >
+                              ✉️ Email ({checkedRows.length})
+                            </button>
                             <button
                               onClick={copyCSV}
                               className="px-2.5 py-1 bg-gray-700 text-white rounded text-xs font-normal normal-case hover:bg-gray-800 whitespace-nowrap"

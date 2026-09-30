@@ -16,6 +16,7 @@ interface TreePin {
   tree_type_id: number | null;
   tree_type_name: string | null;
   tree_exists: boolean;
+  lang: 'el' | 'en' | null;
   created_at: string;
 }
 
@@ -31,7 +32,7 @@ interface AdminPinDetailProps {
   onTreeTypeChange: (pinId: number, typeId: string) => void;
   onTreeExistsChange: (pinId: number, treeExists: boolean) => void;
   onLocationUpdate: (pinId: number, lat: number, lng: number) => Promise<void>;
-  onContactUpdate: (pinId: number, name: string, email: string, phone: string) => Promise<void>;
+  onContactUpdate: (pinId: number, name: string, email: string, phone: string, lang: 'el' | 'en') => Promise<void>;
   onDelete: (pin: TreePin) => void;
   onReject: (pin: TreePin, reason: string) => Promise<void>;
 }
@@ -49,7 +50,7 @@ export default function AdminPinDetail({
 }: AdminPinDetailProps) {
   const [showMover, setShowMover] = useState(false);
   const [isEditingContact, setIsEditingContact] = useState(false);
-  const [contactForm, setContactForm] = useState({ name: '', email: '', phone: '' });
+  const [contactForm, setContactForm] = useState<{ name: string; email: string; phone: string; lang: 'el' | 'en' }>({ name: '', email: '', phone: '', lang: 'el' });
   const [contactError, setContactError] = useState<string | null>(null);
   const [isSavingContact, setIsSavingContact] = useState(false);
   const [isRejecting, setIsRejecting] = useState(false);
@@ -62,7 +63,7 @@ export default function AdminPinDetail({
   };
 
   const startEditingContact = () => {
-    setContactForm({ name: pin.user_name, email: pin.user_email, phone: pin.user_phone || '' });
+    setContactForm({ name: pin.user_name, email: pin.user_email, phone: pin.user_phone || '', lang: pin.lang === 'en' ? 'en' : 'el' });
     setContactError(null);
     setIsEditingContact(true);
   };
@@ -77,7 +78,7 @@ export default function AdminPinDetail({
     setIsSavingContact(true);
     setContactError(null);
     try {
-      await onContactUpdate(pin.id, name, email, contactForm.phone.trim());
+      await onContactUpdate(pin.id, name, email, contactForm.phone.trim(), contactForm.lang);
       setIsEditingContact(false);
     } catch (err: any) {
       setContactError(err.message || 'Αποτυχία αποθήκευσης');
@@ -159,6 +160,17 @@ export default function AdminPinDetail({
                     className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                   />
                 </div>
+                <div>
+                  <label className="text-xs text-gray-400 block mb-1">Γλώσσα emails</label>
+                  <select
+                    value={contactForm.lang}
+                    onChange={(e) => setContactForm(f => ({ ...f, lang: e.target.value as 'el' | 'en' }))}
+                    className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  >
+                    <option value="el">Ελληνικά</option>
+                    <option value="en">English</option>
+                  </select>
+                </div>
                 {contactError && <p className="text-xs text-red-600">{contactError}</p>}
                 <div className="flex gap-2">
                   <button
@@ -193,6 +205,10 @@ export default function AdminPinDetail({
                     ? <a href={`tel:${pin.user_phone}`} className="text-blue-600 hover:underline">{pin.user_phone}</a>
                     : <span className="text-gray-400">—</span>
                   }
+                </div>
+                <div className="flex gap-2">
+                  <span className="text-gray-400 w-16 flex-shrink-0">Γλώσσα</span>
+                  <span>{pin.lang === 'en' ? 'English' : 'Ελληνικά'}</span>
                 </div>
               </div>
             )}

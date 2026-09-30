@@ -105,6 +105,35 @@ export async function initDatabase() {
     // Column might already exist, ignore error
   }
 
+  // Preferred language of the adopter (used for broadcast emails)
+  try {
+    await sql`
+      ALTER TABLE tree_pins
+      ADD COLUMN IF NOT EXISTS lang VARCHAR(2) DEFAULT 'el'
+    `;
+  } catch (error) {
+    // Column might already exist, ignore error
+  }
+
+  // Broadcast emails: opt-outs and history
+  await sql`
+    CREATE TABLE IF NOT EXISTS email_optouts (
+      email VARCHAR(255) PRIMARY KEY,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `;
+  await sql`
+    CREATE TABLE IF NOT EXISTS email_broadcasts (
+      id SERIAL PRIMARY KEY,
+      subject_el TEXT,
+      subject_en TEXT,
+      recipient_count INTEGER DEFAULT 0,
+      sent_count INTEGER DEFAULT 0,
+      failed_count INTEGER DEFAULT 0,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `;
+
   // Zone suggestions table
   await sql`
     CREATE TABLE IF NOT EXISTS zone_suggestions (
@@ -133,6 +162,7 @@ export interface TreePin {
   tree_type_id: number | null;
   tree_type_name: string | null;
   tree_exists: boolean;
+  lang: 'el' | 'en';
   created_at: Date;
 }
 
@@ -152,11 +182,12 @@ export async function createTreePin(
   treeLabel: string,
   zoneId?: number | null,
   treeExists: boolean = true,
-  userPhone?: string
+  userPhone?: string,
+  lang: 'el' | 'en' = 'el'
 ): Promise<TreePin> {
   const result = await sql`
-    INSERT INTO tree_pins (latitude, longitude, user_name, user_email, tree_label, zone_id, tree_exists, user_phone)
-    VALUES (${latitude}, ${longitude}, ${userName}, ${userEmail}, ${treeLabel}, ${zoneId || null}, ${treeExists}, ${userPhone || null})
+    INSERT INTO tree_pins (latitude, longitude, user_name, user_email, tree_label, zone_id, tree_exists, user_phone, lang)
+    VALUES (${latitude}, ${longitude}, ${userName}, ${userEmail}, ${treeLabel}, ${zoneId || null}, ${treeExists}, ${userPhone || null}, ${lang})
     RETURNING *
   `;
   return result.rows[0] as TreePin;
@@ -329,11 +360,13 @@ export async function updateTreePinContact(
   pinId: number,
   userName: string,
   userEmail: string,
-  userPhone: string | null
+  userPhone: string | null,
+  lang?: 'el' | 'en'
 ): Promise<void> {
   await sql`
     UPDATE tree_pins
-    SET user_name = ${userName}, user_email = ${userEmail}, user_phone = ${userPhone}
+    SET user_name = ${userName}, user_email = ${userEmail}, user_phone = ${userPhone},
+        lang = COALESCE(${lang ?? null}, lang)
     WHERE id = ${pinId}
   `;
 }
@@ -406,4 +439,65 @@ export async function updateZoneSuggestionStatus(id: number, status: 'pending' |
   await sql`
     UPDATE zone_suggestions SET status = ${status} WHERE id = ${id}
   `;
+}
+
+// Broadcast emails
+export async function getTreePinsByIds(ids: number[]): Promise<TreePin[]> {
+  const safeIds = ids.filter(id => Number.isInteger(id));
+  if (safeIds.length === 0) return [];
+  const idArray = `{${safeIds.join(',')}}`;
+  const result = await sql`
+    SELECT * FROM tree_pins
+    WHERE id = ANY(${idArray}::int[])
+    ORDER BY created_at DESC
+  `;
+  return result.rows as TreePin[];
+}
+
+export async function getOptedOutEmails(): Promise<string[]> {
+  const result = await sql`SELECT email FROM email_optouts`;
+  return result.rows.map(r => String(r.email).toLowerCase());
+}
+
+export async function addEmailOptOut(email: string): Promise<void> {
+  await sql`
+    INSERT INTO email_optouts (email) VALUES (${email.toLowerCase()})
+    ON CONFLICT (email) DO NOTHING
+  `;
+}
+
+export interface EmailBroadcast {
+  id: number;
+  subject_el: string | null;
+  subject_en: string | null;
+  recipient_count: number;
+  sent_count: number;
+  failed_count: number;
+  created_at: Date;
+}
+
+export async function createEmailBroadcast(subjectEl: string, subjectEn: string): Promise<number> {
+  const result = await sql`
+    INSERT INTO email_broadcasts (subject_el, subject_en)
+    VALUES (${subjectEl || null}, ${subjectEn || null})
+    RETURNING id
+  `;
+  return result.rows[0].id as number;
+}
+
+export async function addEmailBroadcastCounts(id: number, recipients: number, sent: number, failed: number): Promise<void> {
+  await sql`
+    UPDATE email_broadcasts
+    SET recipient_count = recipient_count + ${recipients},
+        sent_count = sent_count + ${sent},
+        failed_count = failed_count + ${failed}
+    WHERE id = ${id}
+  `;
+}
+
+export async function getEmailBroadcasts(limit = 20): Promise<EmailBroadcast[]> {
+  const result = await sql`
+    SELECT * FROM email_broadcasts ORDER BY created_at DESC LIMIT ${limit}
+  `;
+  return result.rows as EmailBroadcast[];
 }

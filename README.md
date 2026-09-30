@@ -1,6 +1,6 @@
 # Adopt a Tree - Thermi, Thessaloniki
 
-**Current Version: 1.0.9** | [mytree.epi-thermi.gr](https://mytree.epi-thermi.gr)
+**Current Version: 1.1.0** | [mytree.epi-thermi.gr](https://mytree.epi-thermi.gr)
 
 A community engagement platform enabling residents of Thermi, Thessaloniki to adopt and care for trees via an interactive map.
 
@@ -34,6 +34,7 @@ Adopt a Tree allows residents to:
 - **Table Filters**: Header checkboxes for "Προς Φύτευση" (to be planted) and "Χωρίς τηλέφωνο" (no phone); CSV export respects them
 - **Copy as CSV**: Select specific rows and copy them to the clipboard as CSV
 - **Tree Type Assignment**: Assign species from the detail panel
+- **Mass Emailer** (`/admin/emails`): send bilingual (EL/EN) broadcasts to selected rows, all adopters or filtered groups, with placeholders, preview, test send and history
 - **Edit Adopter Details**: Fix the adopter's name, email and phone from the detail panel
 - **Move Pin**: Drag a tree to its correct map location from the detail panel
 - **Reject Adoption**: Reject with a reason — sends an email to the adopter automatically
@@ -60,15 +61,19 @@ src/
 │   ├── page.tsx                    # Main map interface
 │   ├── layout.tsx                  # Root layout with Footer & LanguageProvider
 │   ├── guide/page.tsx              # Watering guide (bilingual)
+│   ├── unsubscribe/page.tsx        # Public opt-out from broadcast emails
 │   ├── api/
 │   │   ├── pins/route.ts           # Tree CRUD (GET/POST/PATCH/DELETE)
 │   │   ├── pins/reject/route.ts    # Reject adoption
 │   │   ├── zone-suggestions/route.ts # User zone suggestions
+│   │   ├── emails/send|history|optouts # Mass emailer (admin)
+│   │   ├── unsubscribe/route.ts    # Public, HMAC-signed opt-out
 │   │   ├── zones/route.ts          # Planting zone CRUD
 │   │   ├── tree-types/route.ts     # Tree type CRUD
 │   │   └── auth/                   # Session management
 │   └── admin/
 │       ├── page.tsx                # Dashboard
+│       ├── emails/page.tsx         # Mass emailer
 │       ├── zones/page.tsx          # Zone management
 │       └── tree-types/page.tsx     # Tree species management
 ├── components/
@@ -88,10 +93,12 @@ src/
 
 ## Database Tables
 
-- `tree_pins` — id, latitude, longitude, user_name, user_email, user_phone, tree_label, zone_id, tree_type_id, tree_exists, created_at
+- `tree_pins` — id, latitude, longitude, user_name, user_email, user_phone, tree_label, zone_id, tree_type_id, tree_exists, lang, created_at
 - `planting_zones` — id, name, description, coordinates (JSONB), enabled, nearest_roads, created_at
 - `tree_types` — id, name, description, created_at
 - `zone_suggestions` — id, latitude, longitude, user_name, user_email, description, status, created_at
+- `email_optouts` — email (PK), created_at
+- `email_broadcasts` — id, subject_el, subject_en, recipient_count, sent_count, failed_count, created_at
 
 ## Quick Start
 
@@ -110,7 +117,8 @@ src/
 | `RESEND_API_KEY` | Resend email API key |
 | `EMAIL_FROM` | Sender email address |
 | `ADMIN_PASSWORD` | Admin dashboard password |
-| `AUTH_SECRET` | HMAC secret for session tokens |
+| `SESSION_SECRET` | HMAC secret for session tokens and unsubscribe links |
+| `NEXT_PUBLIC_APP_URL` | Public site URL (used in email links), e.g. `https://mytree.epi-thermi.gr` |
 | `ADMIN_EMAIL` | Admin email address for CC on zone approval emails (optional) |
 
 ## Usage

@@ -54,7 +54,8 @@ export async function POST(request: NextRequest) {
       label,
       zone?.id,
       treeExists !== false,
-      phone || undefined
+      phone || undefined,
+      lang
     );
 
     // Send confirmation email
@@ -103,7 +104,7 @@ export async function PATCH(request: NextRequest) {
   try {
     await initDatabase();
     const body = await request.json();
-    const { id, tree_type_id, tree_exists, latitude, longitude, user_name, user_email, user_phone } = body;
+    const { id, tree_type_id, tree_exists, latitude, longitude, user_name, user_email, user_phone, lang: newLang } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'Missing pin ID' }, { status: 400 });
@@ -119,7 +120,7 @@ export async function PATCH(request: NextRequest) {
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         return NextResponse.json({ error: 'Invalid email address' }, { status: 400 });
       }
-      await updateTreePinContact(id, name, email, phone || null);
+      await updateTreePinContact(id, name, email, phone || null, newLang === 'en' ? 'en' : newLang === 'el' ? 'el' : undefined);
     } else if (latitude !== undefined && longitude !== undefined) {
       await updateTreePinLocation(id, parseFloat(latitude), parseFloat(longitude));
     } else if (tree_exists !== undefined) {

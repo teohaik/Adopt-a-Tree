@@ -66,7 +66,8 @@ src/
 11. `tree_exists` flag: users declare if tree already exists or needs planting; admin can update in the detail panel and filter "Προς Φύτευση"
 12. Required phone number on adoption (`user_phone`), shown in admin and CSV export
 13. Master-detail admin: click a row for detail panel; move pin on map; reject adoption with reason (emails adopter, deletes pin)
-14. Zone suggestions: users suggest new planting locations; admin reviews, which sends an approval email (CC `ADMIN_EMAIL`, optional)
+14. Admin list table: email column, header checkbox filters ("Προς φύτευση", "Χωρίς τηλέφωνο"), row checkboxes, "Αντιγραφή CSV" copies checked (or all visible) rows; CSV export respects filters
+15. Zone suggestions: users suggest new planting locations; admin reviews, which sends an approval email (CC `ADMIN_EMAIL`, optional)
 
 ## Database Tables
 - `tree_pins` — id, latitude, longitude, user_name, user_email, user_phone, tree_label, zone_id (FK), tree_type_id (FK), tree_exists (boolean, default true), created_at
@@ -81,10 +82,11 @@ src/
 Thermi: 40.5463°N, 23.0176°E
 
 ## Current Version
-1.0.7
+1.0.8
 
 ## Recent Commits
+- (1.0.8): Admin table: email column, header checkbox filters (to plant, no phone), row selection + copy as CSV
+- c404f5f: Update CLAUDE.md and README to reflect v1.0.7 features
 - dac9726: Bump version to 1.0.7, send approval email on zone suggestion review
 - 674a29b: Bump version to 1.0.6, master-detail admin, move pin, reject adoption
 - da04410: Bump version to 1.0.5, add phone number field to tree adoption
-- 31a5a40: Bump version to 1.0.4, fix admin table width to use full viewport

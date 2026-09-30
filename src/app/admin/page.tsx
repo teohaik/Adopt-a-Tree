@@ -57,6 +57,9 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<ViewTab>('list');
   const [expandedZones, setExpandedZones] = useState<Set<string>>(new Set());
   const [showOnlyToPlant, setShowOnlyToPlant] = useState(false);
+  const [showOnlyNoPhone, setShowOnlyNoPhone] = useState(false);
+  const [checkedIds, setCheckedIds] = useState<Set<number>>(new Set());
+  const [copied, setCopied] = useState(false);
   const [selectedPinId, setSelectedPinId] = useState<number | null>(null);
 
   const selectedPin = selectedPinId ? (pins.find(p => p.id === selectedPinId) ?? null) : null;
@@ -192,20 +195,54 @@ export default function AdminPage() {
     window.location.href = '/admin/login';
   };
 
-  const exportToCSV = () => {
+  const buildCSV = (rows: TreePin[]) => {
     const headers = ['ID', 'Ετικέτα Δέντρου', 'Είδος Δέντρου', 'Κατάσταση', 'Όνομα Χρήστη', 'Email Χρήστη', 'Τηλέφωνο', 'Ζώνη', 'Γεωγραφικό Πλάτος', 'Γεωγραφικό Μήκος', 'Ημερομηνία Δημιουργίας'];
-    const csvData = displayedPins.map(pin => [
+    const csvData = rows.map(pin => [
       pin.id, pin.tree_label, pin.tree_type_name || '',
       pin.tree_exists ? 'Υπάρχει ήδη' : 'Προς φύτευση',
       pin.user_name, pin.user_email, pin.user_phone || '',
       pin.zone_name || '', pin.latitude, pin.longitude,
       new Date(pin.created_at).toLocaleString(),
     ]);
-    const csv = [headers, ...csvData].map(row => row.map(c => `"${c}"`).join(',')).join('\n');
+    return [headers, ...csvData]
+      .map(row => row.map(c => `"${String(c).replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+  };
+
+  const exportToCSV = () => {
     const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+    a.href = URL.createObjectURL(new Blob([buildCSV(displayedPins)], { type: 'text/csv' }));
     a.download = `tree-pins-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
+  };
+
+  // Copies the checked rows (among those currently visible); with nothing checked, copies all visible rows.
+  const copyCSV = async () => {
+    const rows = checkedRows.length > 0 ? checkedRows : displayedPins;
+    try {
+      await navigator.clipboard.writeText(buildCSV(rows));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      alert('Αποτυχία αντιγραφής στο πρόχειρο');
+    }
+  };
+
+  const toggleChecked = (id: number) => {
+    setCheckedIds(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const toggleAllVisible = () => {
+    setCheckedIds(prev => {
+      const next = new Set(prev);
+      if (allVisibleChecked) displayedPins.forEach(p => next.delete(p.id));
+      else displayedPins.forEach(p => next.add(p.id));
+      return next;
+    });
   };
 
   const toggleZone = (zoneName: string) => {
@@ -217,7 +254,12 @@ export default function AdminPage() {
   };
 
   const toPlantCount = pins.filter(p => !p.tree_exists).length;
-  const displayedPins = showOnlyToPlant ? pins.filter(p => !p.tree_exists) : pins;
+  const noPhoneCount = pins.filter(p => !p.user_phone?.trim()).length;
+  const displayedPins = pins.filter(p =>
+    (!showOnlyToPlant || !p.tree_exists) && (!showOnlyNoPhone || !p.user_phone?.trim())
+  );
+  const checkedRows = displayedPins.filter(p => checkedIds.has(p.id));
+  const allVisibleChecked = displayedPins.length > 0 && checkedRows.length === displayedPins.length;
   const pinsByZone = displayedPins.reduce<Record<string, TreePin[]>>((acc, pin) => {
     const key = pin.zone_name || 'Χωρίς Ζώνη';
     if (!acc[key]) acc[key] = [];
@@ -257,18 +299,8 @@ export default function AdminPage() {
             <Link href="/admin/tree-types" className="px-4 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700 text-sm">
               Είδη Δέντρων
             </Link>
-            <button
-              onClick={() => setShowOnlyToPlant(!showOnlyToPlant)}
-              className={`px-4 py-2 rounded-md font-medium text-sm transition-colors ${
-                showOnlyToPlant
-                  ? 'bg-orange-500 text-white hover:bg-orange-600 ring-2 ring-orange-300'
-                  : 'bg-orange-100 text-orange-700 hover:bg-orange-200'
-              }`}
-            >
-              🌱 Προς Φύτευση{toPlantCount > 0 && ` (${toPlantCount})`}
-            </button>
             <button onClick={exportToCSV} className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm">
-              Εξαγωγή CSV
+              Εξαγωγή CSV{displayedPins.length !== pins.length && ` (${displayedPins.length})`}
             </button>
             <button onClick={handleLogout} className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm">
               Αποσύνδεση
@@ -331,7 +363,7 @@ export default function AdminPage() {
             {/* LIST TAB */}
             {activeTab === 'list' && (
               <div className="bg-white rounded-b-lg rounded-tr-lg shadow-md overflow-hidden">
-                {displayedPins.length === 0 ? (
+                {pins.length === 0 ? (
                   <div className="text-center py-12 text-gray-500">
                     Δεν υιοθετήθηκαν ακόμα δέντρα.
                   </div>
@@ -340,12 +372,60 @@ export default function AdminPage() {
                     <table className="w-full">
                       <thead className="bg-gray-100">
                         <tr>
+                          <th className="px-3 pt-3 pb-1 w-8" />
                           <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ετικέτα Δέντρου</th>
                           <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Υιοθέτης</th>
+                          <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                           <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Τηλέφωνο</th>
                           <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ζώνη</th>
                           <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Κατάσταση</th>
                           <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ημερομηνία</th>
+                        </tr>
+                        <tr className="border-b border-gray-200">
+                          <th className="px-3 pb-2">
+                            <input
+                              type="checkbox"
+                              checked={allVisibleChecked}
+                              onChange={toggleAllVisible}
+                              title="Επιλογή όλων των εμφανιζόμενων"
+                              className="h-4 w-4 accent-green-600"
+                            />
+                          </th>
+                          <th colSpan={3} className="px-3 pb-2 text-left text-xs font-normal normal-case text-gray-500">
+                            {displayedPins.length} / {pins.length} εγγραφές
+                            {checkedRows.length > 0 && ` · ${checkedRows.length} επιλεγμένες`}
+                          </th>
+                          <th className="px-3 pb-2 text-left">
+                            <label className="flex items-center gap-1.5 text-xs font-normal normal-case text-gray-700 cursor-pointer whitespace-nowrap">
+                              <input
+                                type="checkbox"
+                                checked={showOnlyNoPhone}
+                                onChange={e => setShowOnlyNoPhone(e.target.checked)}
+                                className="h-4 w-4 accent-blue-600"
+                              />
+                              Χωρίς τηλέφωνο ({noPhoneCount})
+                            </label>
+                          </th>
+                          <th className="px-3 pb-2" />
+                          <th className="px-3 pb-2 text-left">
+                            <label className="flex items-center gap-1.5 text-xs font-normal normal-case text-gray-700 cursor-pointer whitespace-nowrap">
+                              <input
+                                type="checkbox"
+                                checked={showOnlyToPlant}
+                                onChange={e => setShowOnlyToPlant(e.target.checked)}
+                                className="h-4 w-4 accent-orange-500"
+                              />
+                              🌱 Προς φύτευση ({toPlantCount})
+                            </label>
+                          </th>
+                          <th className="px-3 pb-2 text-right">
+                            <button
+                              onClick={copyCSV}
+                              className="px-2.5 py-1 bg-gray-700 text-white rounded text-xs font-normal normal-case hover:bg-gray-800 whitespace-nowrap"
+                            >
+                              {copied ? '✓ Αντιγράφηκε' : `📋 Αντιγραφή CSV (${checkedRows.length > 0 ? checkedRows.length : displayedPins.length})`}
+                            </button>
+                          </th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
@@ -357,8 +437,17 @@ export default function AdminPage() {
                               selectedPinId === pin.id ? 'bg-green-50 border-l-4 border-green-500' : ''
                             }`}
                           >
+                            <td className="px-3 py-2.5" onClick={e => e.stopPropagation()}>
+                              <input
+                                type="checkbox"
+                                checked={checkedIds.has(pin.id)}
+                                onChange={() => toggleChecked(pin.id)}
+                                className="h-4 w-4 accent-green-600"
+                              />
+                            </td>
                             <td className="px-3 py-2.5 text-sm font-medium text-gray-900">{pin.tree_label}</td>
                             <td className="px-3 py-2.5 text-sm text-gray-700">{pin.user_name}</td>
+                            <td className="px-3 py-2.5 text-sm text-gray-500">{pin.user_email}</td>
                             <td className="px-3 py-2.5 text-sm text-gray-500">{pin.user_phone || '—'}</td>
                             <td className="px-3 py-2.5 text-sm text-gray-500">{pin.zone_name || '—'}</td>
                             <td className="px-3 py-2.5"><StatusBadge treeExists={pin.tree_exists} /></td>
@@ -367,6 +456,9 @@ export default function AdminPage() {
                             </td>
                           </tr>
                         ))}
+                        {displayedPins.length === 0 && (
+                          <tr><td colSpan={8} className="text-center py-8 text-gray-500 text-sm">Καμία εγγραφή με τα τρέχοντα φίλτρα.</td></tr>
+                        )}
                       </tbody>
                     </table>
                   </div>

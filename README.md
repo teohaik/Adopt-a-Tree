@@ -60,6 +60,8 @@ src/
 │   ├── guide/page.tsx              # Watering guide (bilingual)
 │   ├── api/
 │   │   ├── pins/route.ts           # Tree CRUD (GET/POST/PATCH/DELETE)
+│   │   ├── pins/reject/route.ts    # Reject adoption
+│   │   ├── zone-suggestions/route.ts # User zone suggestions
 │   │   ├── zones/route.ts          # Planting zone CRUD
 │   │   ├── tree-types/route.ts     # Tree type CRUD
 │   │   └── auth/                   # Session management
@@ -70,6 +72,8 @@ src/
 ├── components/
 │   ├── TreeMap.tsx                 # Google Maps component
 │   ├── PinForm.tsx                 # Tree adoption form
+│   ├── AdminPinDetail.tsx          # Admin detail panel
+│   ├── AdminPinMover.tsx           # Relocate a pin on the map
 │   ├── LanguageToggle.tsx          # El/En switcher
 │   └── Footer.tsx
 └── lib/
@@ -85,6 +89,7 @@ src/
 - `tree_pins` — id, latitude, longitude, user_name, user_email, user_phone, tree_label, zone_id, tree_type_id, tree_exists, created_at
 - `planting_zones` — id, name, description, coordinates (JSONB), enabled, nearest_roads, created_at
 - `tree_types` — id, name, description, created_at
+- `zone_suggestions` — id, latitude, longitude, user_name, user_email, description, status, created_at
 
 ## Quick Start
 

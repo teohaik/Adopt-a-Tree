@@ -21,7 +21,7 @@ src/
 │   ├── unsubscribe/page.tsx        # Public opt-out from broadcasts (confirm button, POSTs /api/unsubscribe)
 │   ├── opengraph-image.tsx         # OG image
 │   ├── api/
-│   │   ├── pins/route.ts           # Tree CRUD (GET/POST/PATCH/DELETE; PATCH: type, tree_exists, move location, contact details)
+│   │   ├── pins/route.ts           # Tree CRUD (GET/POST/PATCH/DELETE; PATCH: type, tree_exists, move location, contact details; GET is public but returns only id/lat/lng/label/mine unless admin)
 │   │   ├── pins/reject/route.ts    # Reject adoption (emails adopter, deletes pin)
 │   │   ├── zone-suggestions/route.ts # User zone suggestions (GET/POST/PATCH/DELETE)
 │   │   ├── emails/send/route.ts    # Broadcast send (admin): resolves emails server-side from pin IDs, max 100 recipients/call, batch via Resend; test mode -> ADMIN_EMAIL
@@ -92,11 +92,11 @@ src/
 Thermi: 40.5463°N, 23.0176°E
 
 ## Current Version
-1.1.0
+1.1.1
 
 ## Recent Commits
-- (1.1.0): Mass emailer at /admin/emails, per-adopter language, unsubscribe flow
+- (1.1.1): Security: public GET /api/pins no longer returns names/emails/phones (admin-only); public gets a server-computed `mine` flag via ?email=
+- 241d21c: Mass emailer at /admin/emails, per-adopter language, unsubscribe flow (v1.1.0)
 - dd4e456: Admin can edit adopter name/email/phone in detail panel; fix "Στοιχεία Αναδόχου" heading
 - 103d9fd: Admin table: email column, header checkbox filters (to plant, no phone), row selection + copy as CSV
 - c404f5f: Update CLAUDE.md and README to reflect v1.0.7 features
-- dac9726: Bump version to 1.0.7, send approval email on zone suggestion review

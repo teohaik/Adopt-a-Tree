@@ -6,7 +6,7 @@ import { useLanguage } from '@/lib/i18n/LanguageContext';
 
 interface TreeMapProps {
   onPinCreated: (lat: number, lng: number) => void;
-  existingPins?: Array<{ latitude: number; longitude: number; tree_label: string; user_email: string }>;
+  existingPins?: Array<{ latitude: number; longitude: number; tree_label: string; mine?: boolean }>;
   currentUserEmail?: string;
   placementMode: boolean;
   onPlacementComplete: () => void;
@@ -168,7 +168,7 @@ export default function TreeMap({ onPinCreated, existingPins = [], currentUserEm
     // Add markers for existing pins
     const newMarkers = existingPins.map((pin, index) => {
       // Check if this tree belongs to the current user
-      const isUserTree = currentUserEmail && pin.user_email === currentUserEmail;
+      const isUserTree = !!currentUserEmail && !!pin.mine;
       console.log(`Pin ${index}: ${pin.tree_label}, isUserTree: ${isUserTree}, color: ${isUserTree ? 'orange' : 'green'}`);
 
       // Convert to numbers (database returns decimals as strings)

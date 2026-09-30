@@ -86,7 +86,24 @@ export async function GET(request: NextRequest) {
     await initDatabase();
 
     const pins = await getAllTreePins();
-    return NextResponse.json(pins);
+
+    // Admins get full records. The public map only gets what it needs to draw markers:
+    // no names, emails or phone numbers. `mine` lets a visitor see their own trees
+    // without the addresses of everyone else being sent to the browser.
+    if (await verifyApiAuth(request)) {
+      return NextResponse.json(pins);
+    }
+
+    const email = new URL(request.url).searchParams.get('email')?.trim().toLowerCase();
+    return NextResponse.json(
+      pins.map(p => ({
+        id: p.id,
+        latitude: p.latitude,
+        longitude: p.longitude,
+        tree_label: p.tree_label,
+        mine: !!email && p.user_email.trim().toLowerCase() === email,
+      }))
+    );
   } catch (error) {
     console.error('Error fetching pins:', error);
     return NextResponse.json(

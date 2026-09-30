@@ -15,8 +15,7 @@ interface TreePin {
   latitude: number;
   longitude: number;
   tree_label: string;
-  user_name: string;
-  user_email: string;
+  mine?: boolean;
 }
 
 export default function Home() {
@@ -29,8 +28,6 @@ export default function Home() {
   const { t, language } = useLanguage();
 
   useEffect(() => {
-    fetchPins();
-
     // Check URL parameter first
     const urlParams = new URLSearchParams(window.location.search);
     const emailFromUrl = urlParams.get('email');
@@ -50,9 +47,14 @@ export default function Home() {
     }
   }, []);
 
-  const fetchPins = async () => {
+  // Reload markers whenever the "my trees" email changes (the server flags matching pins)
+  useEffect(() => {
+    fetchPins(currentUserEmail);
+  }, [currentUserEmail]);
+
+  const fetchPins = async (email: string = currentUserEmail) => {
     try {
-      const response = await fetch('/api/pins');
+      const response = await fetch(email ? `/api/pins?email=${encodeURIComponent(email)}` : '/api/pins');
       if (response.ok) {
         const data = await response.json();
         setPins(data);
@@ -102,7 +104,7 @@ export default function Home() {
 
         setSelectedLocation(null);
         setShowSuccess(true);
-        fetchPins();
+        fetchPins(data.email);
 
         setTimeout(() => {
           setShowSuccess(false);

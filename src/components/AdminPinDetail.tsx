@@ -31,6 +31,7 @@ interface AdminPinDetailProps {
   onTreeTypeChange: (pinId: number, typeId: string) => void;
   onTreeExistsChange: (pinId: number, treeExists: boolean) => void;
   onLocationUpdate: (pinId: number, lat: number, lng: number) => Promise<void>;
+  onContactUpdate: (pinId: number, name: string, email: string, phone: string) => Promise<void>;
   onDelete: (pin: TreePin) => void;
   onReject: (pin: TreePin, reason: string) => Promise<void>;
 }
@@ -42,10 +43,15 @@ export default function AdminPinDetail({
   onTreeTypeChange,
   onTreeExistsChange,
   onLocationUpdate,
+  onContactUpdate,
   onDelete,
   onReject,
 }: AdminPinDetailProps) {
   const [showMover, setShowMover] = useState(false);
+  const [isEditingContact, setIsEditingContact] = useState(false);
+  const [contactForm, setContactForm] = useState({ name: '', email: '', phone: '' });
+  const [contactError, setContactError] = useState<string | null>(null);
+  const [isSavingContact, setIsSavingContact] = useState(false);
   const [isRejecting, setIsRejecting] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
   const [isSubmittingRejection, setIsSubmittingRejection] = useState(false);
@@ -53,6 +59,31 @@ export default function AdminPinDetail({
   const handleSaveLocation = async (lat: number, lng: number) => {
     await onLocationUpdate(pin.id, lat, lng);
     setShowMover(false);
+  };
+
+  const startEditingContact = () => {
+    setContactForm({ name: pin.user_name, email: pin.user_email, phone: pin.user_phone || '' });
+    setContactError(null);
+    setIsEditingContact(true);
+  };
+
+  const handleSaveContact = async () => {
+    const name = contactForm.name.trim();
+    const email = contactForm.email.trim();
+    if (!name || !email) {
+      setContactError('Το όνομα και το email είναι υποχρεωτικά');
+      return;
+    }
+    setIsSavingContact(true);
+    setContactError(null);
+    try {
+      await onContactUpdate(pin.id, name, email, contactForm.phone.trim());
+      setIsEditingContact(false);
+    } catch (err: any) {
+      setContactError(err.message || 'Αποτυχία αποθήκευσης');
+    } finally {
+      setIsSavingContact(false);
+    }
   };
 
   const handleRejectSubmit = async () => {
@@ -88,24 +119,83 @@ export default function AdminPinDetail({
 
           {/* Adopter */}
           <section>
-            <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Στοιχεία Αδοπτή</h4>
-            <div className="space-y-1.5">
-              <div className="flex gap-2">
-                <span className="text-gray-400 w-16 flex-shrink-0">Όνομα</span>
-                <span className="font-medium">{pin.user_name}</span>
-              </div>
-              <div className="flex gap-2">
-                <span className="text-gray-400 w-16 flex-shrink-0">Email</span>
-                <a href={`mailto:${pin.user_email}`} className="text-blue-600 hover:underline truncate">{pin.user_email}</a>
-              </div>
-              <div className="flex gap-2">
-                <span className="text-gray-400 w-16 flex-shrink-0">Τηλ</span>
-                {pin.user_phone
-                  ? <a href={`tel:${pin.user_phone}`} className="text-blue-600 hover:underline">{pin.user_phone}</a>
-                  : <span className="text-gray-400">—</span>
-                }
-              </div>
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Στοιχεία Αναδόχου</h4>
+              {!isEditingContact && (
+                <button
+                  onClick={startEditingContact}
+                  className="text-xs text-blue-600 hover:underline"
+                >
+                  ✏️ Επεξεργασία
+                </button>
+              )}
             </div>
+            {isEditingContact ? (
+              <div className="space-y-2">
+                <div>
+                  <label className="text-xs text-gray-400 block mb-1">Όνομα</label>
+                  <input
+                    type="text"
+                    value={contactForm.name}
+                    onChange={(e) => setContactForm(f => ({ ...f, name: e.target.value }))}
+                    className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-400 block mb-1">Email</label>
+                  <input
+                    type="email"
+                    value={contactForm.email}
+                    onChange={(e) => setContactForm(f => ({ ...f, email: e.target.value }))}
+                    className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-400 block mb-1">Τηλέφωνο</label>
+                  <input
+                    type="tel"
+                    value={contactForm.phone}
+                    onChange={(e) => setContactForm(f => ({ ...f, phone: e.target.value }))}
+                    className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                  />
+                </div>
+                {contactError && <p className="text-xs text-red-600">{contactError}</p>}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setIsEditingContact(false)}
+                    disabled={isSavingContact}
+                    className="px-3 py-1.5 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-xs"
+                  >
+                    Ακύρωση
+                  </button>
+                  <button
+                    onClick={handleSaveContact}
+                    disabled={isSavingContact}
+                    className="flex-1 px-3 py-1.5 bg-green-600 text-white rounded hover:bg-green-700 disabled:bg-gray-400 text-xs font-medium"
+                  >
+                    {isSavingContact ? 'Αποθήκευση...' : 'Αποθήκευση'}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-1.5">
+                <div className="flex gap-2">
+                  <span className="text-gray-400 w-16 flex-shrink-0">Όνομα</span>
+                  <span className="font-medium">{pin.user_name}</span>
+                </div>
+                <div className="flex gap-2">
+                  <span className="text-gray-400 w-16 flex-shrink-0">Email</span>
+                  <a href={`mailto:${pin.user_email}`} className="text-blue-600 hover:underline truncate">{pin.user_email}</a>
+                </div>
+                <div className="flex gap-2">
+                  <span className="text-gray-400 w-16 flex-shrink-0">Τηλ</span>
+                  {pin.user_phone
+                    ? <a href={`tel:${pin.user_phone}`} className="text-blue-600 hover:underline">{pin.user_phone}</a>
+                    : <span className="text-gray-400">—</span>
+                  }
+                </div>
+              </div>
+            )}
           </section>
 
           <hr />

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createTreePin, getAllTreePins, deleteTreePin, updateTreePinType, updateTreePinExists, updateTreePinLocation, initDatabase, getEnabledPlantingZones } from '@/lib/db';
+import { createTreePin, getAllTreePins, deleteTreePin, updateTreePinType, updateTreePinExists, updateTreePinLocation, updateTreePinContact, initDatabase, getEnabledPlantingZones } from '@/lib/db';
 import { verifyApiAuth } from '@/lib/apiAuth';
 import { sendConfirmationEmail } from '@/lib/email';
 import { isPointInPlantingZone, getZoneForPoint } from '@/lib/plantingZones';
@@ -103,13 +103,24 @@ export async function PATCH(request: NextRequest) {
   try {
     await initDatabase();
     const body = await request.json();
-    const { id, tree_type_id, tree_exists, latitude, longitude } = body;
+    const { id, tree_type_id, tree_exists, latitude, longitude, user_name, user_email, user_phone } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'Missing pin ID' }, { status: 400 });
     }
 
-    if (latitude !== undefined && longitude !== undefined) {
+    if (user_name !== undefined || user_email !== undefined || user_phone !== undefined) {
+      const name = String(user_name ?? '').trim();
+      const email = String(user_email ?? '').trim();
+      const phone = String(user_phone ?? '').trim();
+      if (!name || !email) {
+        return NextResponse.json({ error: 'Name and email are required' }, { status: 400 });
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return NextResponse.json({ error: 'Invalid email address' }, { status: 400 });
+      }
+      await updateTreePinContact(id, name, email, phone || null);
+    } else if (latitude !== undefined && longitude !== undefined) {
       await updateTreePinLocation(id, parseFloat(latitude), parseFloat(longitude));
     } else if (tree_exists !== undefined) {
       await updateTreePinExists(id, Boolean(tree_exists));

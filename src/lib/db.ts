@@ -325,6 +325,19 @@ export async function updateTreePinExists(pinId: number, treeExists: boolean): P
   `;
 }
 
+export async function updateTreePinContact(
+  pinId: number,
+  userName: string,
+  userEmail: string,
+  userPhone: string | null
+): Promise<void> {
+  await sql`
+    UPDATE tree_pins
+    SET user_name = ${userName}, user_email = ${userEmail}, user_phone = ${userPhone}
+    WHERE id = ${pinId}
+  `;
+}
+
 export async function getTreePinById(id: number): Promise<TreePin | null> {
   const result = await sql`
     SELECT tp.*, pz.name as zone_name, tt.name as tree_type_name

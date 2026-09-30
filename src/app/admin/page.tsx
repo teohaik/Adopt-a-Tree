@@ -143,6 +143,21 @@ export default function AdminPage() {
     setPins(prev => prev.map(p => p.id === pinId ? { ...p, latitude: lat, longitude: lng } : p));
   };
 
+  const handleContactUpdate = async (pinId: number, name: string, email: string, phone: string) => {
+    const response = await fetch('/api/pins', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: pinId, user_name: name, user_email: email, user_phone: phone }),
+    });
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data.error || 'Failed to update contact details');
+    }
+    setPins(prev => prev.map(p => p.id === pinId
+      ? { ...p, user_name: name, user_email: email, user_phone: phone || null }
+      : p));
+  };
+
   const handleDelete = async (pin: TreePin) => {
     if (!confirm(`Είστε σίγουροι ότι θέλετε να διαγράψετε το δέντρο "${pin.tree_label}" του ${pin.user_name};`)) return;
     try {
@@ -609,12 +624,14 @@ export default function AdminPage() {
           {/* Detail panel */}
           {selectedPin && (
             <AdminPinDetail
+              key={selectedPin.id}
               pin={selectedPin}
               treeTypes={treeTypes}
               onClose={() => setSelectedPinId(null)}
               onTreeTypeChange={handleTreeTypeChange}
               onTreeExistsChange={handleTreeExistsChange}
               onLocationUpdate={handleLocationUpdate}
+              onContactUpdate={handleContactUpdate}
               onDelete={handleDelete}
               onReject={handleReject}
             />

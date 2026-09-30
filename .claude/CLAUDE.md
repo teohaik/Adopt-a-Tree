@@ -20,7 +20,7 @@ src/
 │   ├── guide/page.tsx              # Watering guide (bilingual)
 │   ├── opengraph-image.tsx         # OG image
 │   ├── api/
-│   │   ├── pins/route.ts           # Tree CRUD (GET/POST/PATCH/DELETE; PATCH: type, tree_exists, move location)
+│   │   ├── pins/route.ts           # Tree CRUD (GET/POST/PATCH/DELETE; PATCH: type, tree_exists, move location, contact details)
 │   │   ├── pins/reject/route.ts    # Reject adoption (emails adopter, deletes pin)
 │   │   ├── zone-suggestions/route.ts # User zone suggestions (GET/POST/PATCH/DELETE)
 │   │   ├── zones/route.ts          # Planting zone CRUD
@@ -35,7 +35,7 @@ src/
 ├── components/
 │   ├── TreeMap.tsx                 # Google Maps component
 │   ├── PinForm.tsx                 # Tree adoption form (phone, tree_exists toggle)
-│   ├── AdminPinDetail.tsx          # Admin detail panel (type, tree_exists, move, reject)
+│   ├── AdminPinDetail.tsx          # Admin detail panel (contact edit, type, tree_exists, move, reject)
 │   ├── AdminPinMover.tsx           # Map UI to relocate a pin
 │   ├── LanguageToggle.tsx          # El/En language switcher (flag emojis)
 │   └── Footer.tsx
@@ -65,7 +65,7 @@ src/
 10. Vercel Analytics
 11. `tree_exists` flag: users declare if tree already exists or needs planting; admin can update in the detail panel and filter "Προς Φύτευση"
 12. Required phone number on adoption (`user_phone`), shown in admin and CSV export
-13. Master-detail admin: click a row for detail panel; move pin on map; reject adoption with reason (emails adopter, deletes pin)
+13. Master-detail admin: click a row for detail panel; move pin on map; reject adoption with reason (emails adopter, deletes pin); edit adopter name/email/phone
 14. Admin list table: email column, header checkbox filters ("Προς φύτευση", "Χωρίς τηλέφωνο"), row checkboxes, "Αντιγραφή CSV" copies checked (or all visible) rows; CSV export respects filters
 15. Zone suggestions: users suggest new planting locations; admin reviews, which sends an approval email (CC `ADMIN_EMAIL`, optional)
 
@@ -82,11 +82,11 @@ src/
 Thermi: 40.5463°N, 23.0176°E
 
 ## Current Version
-1.0.8
+1.0.9
 
 ## Recent Commits
-- (1.0.8): Admin table: email column, header checkbox filters (to plant, no phone), row selection + copy as CSV
+- (1.0.9): Admin can edit adopter name/email/phone in detail panel; fix "Στοιχεία Αναδόχου" heading
+- 103d9fd: Admin table: email column, header checkbox filters (to plant, no phone), row selection + copy as CSV
 - c404f5f: Update CLAUDE.md and README to reflect v1.0.7 features
 - dac9726: Bump version to 1.0.7, send approval email on zone suggestion review
 - 674a29b: Bump version to 1.0.6, master-detail admin, move pin, reject adoption
-- da04410: Bump version to 1.0.5, add phone number field to tree adoption

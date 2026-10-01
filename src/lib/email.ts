@@ -1,6 +1,6 @@
 import { Resend } from 'resend';
 import { translations, Language } from './i18n/translations';
-import { BroadcastLang, BroadcastRecipient, broadcastFromName, fillPlaceholders, renderBroadcastHtml } from './broadcast';
+import { BroadcastLang, BroadcastRecipient, broadcastFromName, escapeHtml, fillPlaceholders, renderBroadcastHtml } from './broadcast';
 import { buildUnsubscribeUrls } from './unsubscribe';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -77,13 +77,13 @@ export async function sendConfirmationEmail(
             <h1>${t.emailTitle}</h1>
           </div>
           <div class="content">
-            <p>${t.emailGreeting(userName)}</p>
+            <p>${t.emailGreeting(escapeHtml(userName))}</p>
 
             <p>${t.emailCongrats}</p>
 
             <div class="tree-info">
               <h3>${t.emailDetailsTitle}</h3>
-              <p><strong>${t.emailLabelField}</strong> ${treeLabel}</p>
+              <p><strong>${t.emailLabelField}</strong> ${escapeHtml(treeLabel)}</p>
               <p><strong>${t.emailLocationField}</strong> ${latitude.toFixed(6)}, ${longitude.toFixed(6)}</p>
             </div>
 
@@ -160,10 +160,10 @@ export async function sendZoneApprovalEmail(
             <h1>${t.emailZoneApprovalTitle}</h1>
           </div>
           <div class="content">
-            <p>${t.emailGreeting(userName)}</p>
+            <p>${t.emailGreeting(escapeHtml(userName))}</p>
             <p>${t.emailZoneApprovalBody}</p>
             <div class="info-box">
-              ${description ? `<p><strong>Περιγραφή:</strong> ${description}</p>` : ''}
+              ${description ? `<p><strong>Περιγραφή:</strong> ${escapeHtml(description)}</p>` : ''}
               <p><strong>Τοποθεσία:</strong> ${latitude.toFixed(6)}, ${longitude.toFixed(6)}</p>
             </div>
             <p style="text-align: center;">
@@ -223,11 +223,11 @@ export async function sendRejectionEmail(
             <h1>${t.emailRejectionTitle}</h1>
           </div>
           <div class="content">
-            <p>${t.emailGreeting(userName)}</p>
+            <p>${t.emailGreeting(escapeHtml(userName))}</p>
             <p>${t.emailRejectionBody}</p>
             <div class="reason-box">
               <p><strong>${t.emailRejectionReasonTitle}</strong></p>
-              <p>${reason}</p>
+              <p>${escapeHtml(reason).replace(/\r?\n/g, '<br>')}</p>
             </div>
             <p>${t.emailRejectionClosing}</p>
             <div class="footer">

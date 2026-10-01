@@ -92,11 +92,11 @@ src/
 Thermi: 40.5463°N, 23.0176°E
 
 ## Current Version
-1.1.1
+1.1.2
 
 ## Recent Commits
-- (1.1.1): Security: public GET /api/pins no longer returns names/emails/phones (admin-only); public gets a server-computed `mine` flag via ?email=
+- (1.1.2): HTML-escape user input (name, tree label, description, rejection reason) in transactional emails; prod NEXT_PUBLIC_APP_URL must be https://mytree.epi-thermi.gr (Gmail blocked mail linking to vercel.app)
+- a8e77aa: Security: public GET /api/pins no longer returns names/emails/phones (admin-only); public gets a server-computed `mine` flag via ?email=
 - 241d21c: Mass emailer at /admin/emails, per-adopter language, unsubscribe flow (v1.1.0)
 - dd4e456: Admin can edit adopter name/email/phone in detail panel; fix "Στοιχεία Αναδόχου" heading
 - 103d9fd: Admin table: email column, header checkbox filters (to plant, no phone), row selection + copy as CSV
-- c404f5f: Update CLAUDE.md and README to reflect v1.0.7 features
